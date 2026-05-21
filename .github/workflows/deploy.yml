@@ -1,0 +1,93 @@
+name: Deploy
+
+# Triggers only on push to main (i.e. after a PR from dev is merged)
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false # never cancel an in-flight deployment
+
+jobs:
+  # ─── Step 1: Build Docker image and push to GitHub Container Registry ────────
+  build:
+    name: Build & push Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      packages: write # required to push to ghcr.io
+
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/master-resume
+        tags: |
+          type=sha,prefix=sha-
+          type=raw,value=latest
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # ─── Step 2: SSH into VPS and pull the new image ─────────────────────────────
+  # Only needed if you self-host on a VPS (AUTH_MODE=email_otp).
+  # Skip this job if you run locally with `docker compose up`.
+  # Required GitHub Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_PATH
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Remove this `if` condition once you configure the secrets below
+    if: ${{ secrets.DEPLOY_HOST != '' }}
+
+    environment:
+      name: production
+      url: ${{ secrets.NEXTAUTH_URL }}
+
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        script: |
+          set -e
+          cd ${{ secrets.DEPLOY_PATH }}
+
+          # Pull the new image
+          docker compose -f docker-compose.prod.yml pull app
+
+          # Restart with zero-downtime (Postgres stays up)
+          docker compose -f docker-compose.prod.yml up -d --no-deps app
+
+          # Remove dangling images
+          docker image prune -f
+
+          echo "Deployment complete: $(date)"

@@ -1,0 +1,27 @@
+services:
+    db:
+        image: postgres:16-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: masterresume
+            POSTGRES_PASSWORD: masterresume
+            POSTGRES_DB: masterresume
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data_dev:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U masterresume']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    mailhog:
+        image: mailhog/mailhog:latest
+        restart: unless-stopped
+        ports:
+            - '1025:1025' # SMTP
+            - '8025:8025' # Web UI → http://localhost:8025
+
+volumes:
+    postgres_data_dev:

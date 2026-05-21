@@ -1,0 +1,37 @@
+services:
+    db:
+        image: postgres:16-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: masterresume
+            POSTGRES_PASSWORD: masterresume
+            POSTGRES_DB: masterresume
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U masterresume']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - '3000:3000'
+        environment:
+            DATABASE_URL: postgresql://masterresume:masterresume@db:5432/masterresume
+            AUTH_MODE: none
+            NEXTAUTH_URL: http://localhost:3000
+            NEXTAUTH_SECRET: change-me-in-production
+            NODE_ENV: production
+        depends_on:
+            db:
+                condition: service_healthy
+        command: >
+            sh -c "npx prisma migrate deploy && node server.js"
+
+volumes:
+    postgres_data:

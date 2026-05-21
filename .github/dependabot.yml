@@ -1,0 +1,45 @@
+version: 2
+updates:
+# npm dependencies — PRs target dev branch, not main
+- package-ecosystem: npm
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+    time: "09:00"
+    timezone: Europe/Berlin
+  target-branch: dev
+  open-pull-requests-limit: 5
+  # Group all non-major updates into a single PR to reduce noise
+  groups:
+    minor-and-patch:
+      update-types:
+      - minor
+      - patch
+  ignore:
+  # Never auto-update major versions — review manually
+  - dependency-name: "*"
+    update-types: [ version-update:semver-major ]
+  labels:
+  - dependencies
+
+# Dockerfile base image
+- package-ecosystem: docker
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+  target-branch: dev
+  labels:
+  - dependencies
+
+# GitHub Actions — keep action versions current
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+  target-branch: dev
+  labels:
+  - dependencies
+  - github-actions

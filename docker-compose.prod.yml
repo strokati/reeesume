@@ -1,0 +1,59 @@
+# Production compose — uses pre-built image from GitHub Container Registry
+# Run on your VPS after `docker login ghcr.io`
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Required .env variables on the server (copy from .env.example):
+#   GITHUB_REPOSITORY_OWNER  — your GitHub username (image is pulled from ghcr.io/<owner>/master-resume)
+#   POSTGRES_PASSWORD        — strong random password
+#   NEXTAUTH_SECRET          — run: openssl rand -base64 32
+#   NEXTAUTH_URL             — your public URL, e.g. https://resume.yourdomain.com
+#   AUTH_MODE                — email_otp (self-hosted) or none (local)
+#   + all SMTP_* vars if AUTH_MODE=email_otp
+
+services:
+    db:
+        image: postgres:16-alpine
+        restart: always
+        environment:
+            POSTGRES_USER: masterresume
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: masterresume
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U masterresume']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        # Do not expose port 5432 externally in production
+        expose:
+            - '5432'
+
+    app:
+        image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/master-resume:latest
+        restart: always
+        ports:
+            - '3000:3000'
+        environment:
+            DATABASE_URL: postgresql://masterresume:${POSTGRES_PASSWORD}@db:5432/masterresume
+            AUTH_MODE: ${AUTH_MODE:-email_otp}
+            NEXTAUTH_URL: ${NEXTAUTH_URL}
+            NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+            NODE_ENV: production
+            SMTP_HOST: ${SMTP_HOST:-}
+            SMTP_PORT: ${SMTP_PORT:-587}
+            SMTP_USER: ${SMTP_USER:-}
+            SMTP_PASS: ${SMTP_PASS:-}
+            SMTP_FROM: ${SMTP_FROM:-}
+            SESSION_DURATION_DAYS: ${SESSION_DURATION_DAYS:-30}
+        depends_on:
+            db:
+                condition: service_healthy
+        command: >
+            sh -c "npx prisma migrate deploy && node server.js"
+
+volumes:
+    postgres_data:

@@ -1,0 +1,420 @@
+// This is your Prisma schema file.
+// Run `npx prisma generate` after editing this file.
+// Run `npx prisma migrate dev --name <migration-name>` to apply changes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// AUTH (used only when AUTH_MODE=email_otp)
+// =============================================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  masterResume     MasterResume?
+  vacancies        Vacancy[]
+  aiProviderConfig AiProviderConfig[]
+  aiCallLogs       AiCallLog[]
+  sessions         Session[]
+  otpCodes         OtpCode[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model OtpCode {
+  id           String   @id @default(cuid())
+  userId       String
+  hashedCode   String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("otp_codes")
+}
+
+// =============================================================================
+// MASTER RESUME
+// =============================================================================
+
+model MasterResume {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+
+  // Flat JSON fields for single-entry sections
+  contactInfo       Json?    // { name, email, phone, location, linkedin, github, website, ... }
+  targetTitle       String?
+  professionalSummary String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workCompanies     WorkCompany[]
+  educations        Education[]
+  skills            Skill[]
+  certifications    Certification[]
+  awards            Award[]
+  projects          Project[]
+  volunteeringRoles VolunteeringRole[]
+  publications      Publication[]
+
+  @@map("master_resumes")
+}
+
+// Work Experience — 3-level hierarchy: Company → Role → Project
+
+model WorkCompany {
+  id             String   @id @default(cuid())
+  resumeId       String
+  name           String
+  location       String?
+  employmentType String?  // "Full-time" | "Part-time" | "Contract" | "Freelance"
+  startDate      String?  // stored as string for flexible input (e.g. "Jan 2020")
+  endDate        String?  // null = current
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  roles  WorkRole[]
+
+  @@map("work_companies")
+}
+
+model WorkRole {
+  id               String   @id @default(cuid())
+  companyId        String
+  title            String
+  startDate        String?
+  endDate          String?  // null = current
+  responsibilities Json?    // String[]
+  achievements     Json?    // String[]
+  technologies     Json?    // String[]
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company  WorkCompany   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projects WorkProject[]
+
+  @@map("work_roles")
+}
+
+model WorkProject {
+  id           String   @id @default(cuid())
+  roleId       String
+  name         String
+  startDate    String?
+  endDate      String?
+  description  String?
+  contribution String?
+  technologies Json?    // String[]
+  outcome      String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  role WorkRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("work_projects")
+}
+
+// Education
+
+model Education {
+  id           String   @id @default(cuid())
+  resumeId     String
+  institution  String
+  degree       String?
+  field        String?
+  location     String?
+  startDate    String?
+  endDate      String?
+  gpa          String?
+  honors       String?
+  activities   Json?    // String[]
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("educations")
+}
+
+// Skills & Interests
+
+model Skill {
+  id        String   @id @default(cuid())
+  resumeId  String
+  name      String
+  category  String?  // e.g. "Programming Languages", "Tools", "Languages", "Interests"
+  level     String?  // "Beginner" | "Intermediate" | "Expert"
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+}
+
+// Certifications
+
+model Certification {
+  id           String   @id @default(cuid())
+  resumeId     String
+  name         String
+  issuer       String?
+  issueDate    String?
+  expiryDate   String?
+  credentialId String?
+  url          String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("certifications")
+}
+
+// Awards & Scholarships
+
+model Award {
+  id          String   @id @default(cuid())
+  resumeId    String
+  title       String
+  issuer      String?
+  date        String?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("awards")
+}
+
+// Projects (personal/open-source, separate from work projects)
+
+model Project {
+  id           String   @id @default(cuid())
+  resumeId     String
+  name         String
+  description  String?
+  role         String?
+  startDate    String?
+  endDate      String?
+  technologies Json?    // String[]
+  url          String?
+  repoUrl      String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+// Volunteering & Leadership
+
+model VolunteeringRole {
+  id              String   @id @default(cuid())
+  resumeId        String
+  organization    String
+  role            String?
+  location        String?
+  startDate       String?
+  endDate         String?
+  responsibilities Json?   // String[]
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("volunteering_roles")
+}
+
+// Publications
+
+model Publication {
+  id          String   @id @default(cuid())
+  resumeId    String
+  title       String
+  authors     String?
+  publisher   String?
+  date        String?
+  url         String?
+  doi         String?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("publications")
+}
+
+// =============================================================================
+// APPLICATIONS
+// =============================================================================
+
+model Vacancy {
+  id          String   @id @default(cuid())
+  userId      String
+  companyName String
+  jobTitle    String
+  location    String?
+  locationType String? // "On-site" | "Hybrid" | "Remote"
+  salaryMin   Int?
+  salaryMax   Int?
+  currency    String?  @default("USD")
+  sourceUrl   String?
+  rawText     String?  // original job posting text
+  aiAnalysis  Json?    // structured output from analyze-vacancy operation
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application Application?
+
+  @@map("vacancies")
+}
+
+model Application {
+  id            String    @id @default(cuid())
+  vacancyId     String    @unique
+  status        String    @default("saved") // saved|planned|applied|screening|interview|offer|rejected|on_hold
+  salaryMin     Int?
+  salaryMax     Int?
+  dateSaved     DateTime  @default(now())
+  deadline      DateTime?
+  dateApplied   DateTime?
+  followUpDate  DateTime?
+  excitement    Int?      // 1–5
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  vacancy          Vacancy             @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  resumeDrafts     ResumeDraft[]
+  coverLetterDrafts CoverLetterDraft[]
+  notes            ApplicationNote[]
+
+  @@map("applications")
+}
+
+model ResumeDraft {
+  id            String   @id @default(cuid())
+  applicationId String
+  name          String   @default("Draft 1")
+  content       Json?    // structured resume sections (mirrors master resume shape but scoped)
+  status        String   @default("draft") // draft|ready|exported
+  isActive      Boolean  @default(false)   // only one active draft per application
+  templateId    String   @default("ats-simple")
+  atsScore      Json?    // { score, subScores, recommendations } from ats-check operation
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("resume_drafts")
+}
+
+model CoverLetterDraft {
+  id             String   @id @default(cuid())
+  applicationId  String
+  name           String   @default("Draft 1")
+  content        String?  // rich text (HTML from Tiptap)
+  tone           String   @default("professional") // professional|confident|warm
+  status         String   @default("draft")        // draft|ready|exported
+  isActive       Boolean  @default(false)
+  hiringManager  String?  // "Dear [name]" salutation
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("cover_letter_drafts")
+}
+
+model ApplicationNote {
+  id            String   @id @default(cuid())
+  applicationId String
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_notes")
+}
+
+// =============================================================================
+// AI CONFIGURATION & LOGGING
+// =============================================================================
+
+model AiProviderConfig {
+  id          String   @id @default(cuid())
+  userId      String
+  providerId  String   // openai|anthropic|google|mistral|groq|xai|cohere|zai|ollama|custom
+  apiKey      String?  // encrypted at rest (application-level encryption)
+  model       String   // e.g. "gpt-4o", "claude-3-5-sonnet-20241022"
+  isDefault   Boolean  @default(false)
+  baseUrl     String?  // for ollama or custom providers
+  displayName String?  // for custom providers
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+  @@map("ai_provider_configs")
+}
+
+model AiCallLog {
+  id            String   @id @default(cuid())
+  userId        String
+  operation     String   // analyze-vacancy|resume-suggestions|ats-check|cover-letter|rephrase|import-resume
+  providerId    String
+  model         String
+  applicationId String?  // null for import-resume and other non-application ops
+  tokensIn      Int?
+  tokensOut     Int?
+  durationMs    Int?
+  error         String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_call_logs")
+}

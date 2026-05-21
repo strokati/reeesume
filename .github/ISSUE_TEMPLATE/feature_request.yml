@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest a new feature or improvement
+labels: [ enhancement ]
+body:
+- type: textarea
+  id: problem
+  attributes:
+    label: What problem does this solve?
+    placeholder: I find it frustrating when...
+  validations:
+    required: true
+
+- type: textarea
+  id: solution
+  attributes:
+    label: Describe the solution you'd like
+  validations:
+    required: true
+
+- type: dropdown
+  id: area
+  attributes:
+    label: App area
+    options:
+    - Master Resume
+    - Applications / Vacancies
+    - Resume Editor
+    - Cover Letter
+    - ATS Check
+    - Application Tracker
+    - AI Providers / Settings
+    - Export (PDF/DOCX)
+    - Templates
+    - Auth / Deployment
+    - Other
+  validations:
+    required: true
+
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives considered
+    description: Any other approaches you thought about?
+
+- type: textarea
+  id: context
+  attributes:
+    label: Additional context
+    description: Mockups, screenshots, or related issues.
