@@ -8,15 +8,25 @@ import { SummaryEditor } from '@/components/master-resume/SummaryEditor';
 import { WorkExperienceSection } from '@/components/master-resume/WorkExperienceSection';
 import { EducationSection } from '@/components/master-resume/EducationSection';
 import { SkillsSection } from '@/components/master-resume/SkillsSection';
+import { CertificationSection } from '@/components/master-resume/CertificationSection';
+import { AwardSection } from '@/components/master-resume/AwardSection';
+import { ProjectSection } from '@/components/master-resume/ProjectSection';
+import { VolunteeringSection } from '@/components/master-resume/VolunteeringSection';
+import { PublicationSection } from '@/components/master-resume/PublicationSection';
 import type { ContactInfoInput } from '@/lib/validations/master-resume';
 import type { WorkCompanyWithRoles } from '@/types/master-resume';
-import type { Education, Skill } from '@prisma/client';
+import type { Education, Skill, Certification, Award, Project, VolunteeringRole, Publication } from '@prisma/client';
 
 export function MasterResumeView({
 	resume,
 	companies,
 	education,
 	skills,
+	certifications,
+	awards,
+	projects,
+	volunteeringRoles,
+	publications,
 }: {
 	resume: {
 		id: string;
@@ -27,6 +37,11 @@ export function MasterResumeView({
 	companies: WorkCompanyWithRoles[];
 	education: Education[];
 	skills: Skill[];
+	certifications: Certification[];
+	awards: Award[];
+	projects: Project[];
+	volunteeringRoles: VolunteeringRole[];
+	publications: Publication[];
 }) {
 	const contactInfo = (resume.contactInfo as ContactInfoInput | null) ?? undefined;
 
@@ -49,6 +64,11 @@ export function MasterResumeView({
 			<WorkExperienceSection companies={companies} resumeId={resume.id} />
 			<EducationSection education={education} resumeId={resume.id} />
 			<SkillsSection skills={skills} resumeId={resume.id} />
+			<CertificationSection certifications={certifications} resumeId={resume.id} />
+			<AwardSection awards={awards} resumeId={resume.id} />
+			<ProjectSection projects={projects} resumeId={resume.id} />
+			<VolunteeringSection roles={volunteeringRoles} resumeId={resume.id} />
+			<PublicationSection publications={publications} resumeId={resume.id} />
 		</div>
 	);
 }
