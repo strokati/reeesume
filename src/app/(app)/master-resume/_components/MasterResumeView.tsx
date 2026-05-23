@@ -13,6 +13,8 @@ import { AwardSection } from '@/components/master-resume/AwardSection';
 import { ProjectSection } from '@/components/master-resume/ProjectSection';
 import { VolunteeringSection } from '@/components/master-resume/VolunteeringSection';
 import { PublicationSection } from '@/components/master-resume/PublicationSection';
+import { Button } from '@/components/ui/button';
+import { Save } from 'lucide-react';
 import type { ContactInfoInput } from '@/lib/validations/master-resume';
 import type { WorkCompanyWithRoles } from '@/types/master-resume';
 import type { Education, Skill, Certification, Award, Project, VolunteeringRole, Publication } from '@prisma/client';
@@ -49,7 +51,15 @@ export function MasterResumeView({
 		<div className="space-y-6">
 			<PageHeader title="Master Resume" description="Your complete career history — the single source of truth." />
 
-			<SectionCard title="Contact Information">
+			<SectionCard
+				title="Contact Information"
+				action={
+					<Button form="contact-info-form" type="submit" size="sm">
+						<Save className="h-4 w-4 mr-1" />
+						Save
+					</Button>
+				}
+			>
 				<ContactInfoForm resumeId={resume.id} defaultValues={contactInfo} />
 			</SectionCard>
 

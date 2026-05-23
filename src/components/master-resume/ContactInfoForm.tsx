@@ -8,7 +8,6 @@ import { updateContactInfo } from '@/server/actions/master-resume';
 import { ContactInfoSchema, type ContactInfoInput } from '@/lib/validations/master-resume';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 
 const fields: { name: keyof ContactInfoInput; label: string; type?: string }[] = [
 	{ name: 'name', label: 'Full Name' },
@@ -27,7 +26,7 @@ export function ContactInfoForm({
 	resumeId: string;
 	defaultValues?: ContactInfoInput;
 }) {
-	const [isPending, startTransition] = useTransition();
+	const [, startTransition] = useTransition();
 
 	const form = useForm<ContactInfoInput>({
 		resolver: zodResolver(ContactInfoSchema),
@@ -46,7 +45,7 @@ export function ContactInfoForm({
 	}
 
 	return (
-		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+		<form id="contact-info-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 			<div className="grid gap-4 sm:grid-cols-2">
 				{fields.map(({ name, label, type }) => (
 					<div key={name} className="space-y-1.5">
@@ -54,11 +53,6 @@ export function ContactInfoForm({
 						<Input id={name} type={type ?? 'text'} {...form.register(name)} />
 					</div>
 				))}
-			</div>
-			<div className="flex justify-end">
-				<Button type="submit" disabled={isPending}>
-					{isPending ? 'Saving...' : 'Save'}
-				</Button>
 			</div>
 		</form>
 	);
