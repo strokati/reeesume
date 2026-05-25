@@ -7,6 +7,8 @@ import { convertDraftToResumeData } from '@/lib/templates/convert-draft';
 import type { ResumeDraftContent } from '@/types/resume-draft';
 import { TemplatesView } from './_components/TemplatesView';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TemplatesPage() {
 	const session = await auth();
 	if (!session && process.env.AUTH_MODE === 'email_otp') redirect('/login');
