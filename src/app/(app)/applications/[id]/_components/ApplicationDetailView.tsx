@@ -12,6 +12,7 @@ import {
 	FileText,
 	Mail,
 	Trash2,
+	ShieldCheck,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -311,9 +312,24 @@ export function ApplicationDetailView({
 											{activeResume ? activeResume.name : 'No resume'}
 										</p>
 										{activeResume && (
-											<Badge variant="outline" className="text-[0.6rem] mt-0.5">
-												{activeResume.status}
-											</Badge>
+											<div className="flex items-center gap-1.5 mt-0.5">
+												<Badge
+													variant="outline"
+													className={`text-[0.6rem] ${
+														activeResume.status === 'ready'
+															? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
+															: ''
+													}`}
+												>
+													{activeResume.status === 'ready' ? '✓ Ready' : activeResume.status}
+												</Badge>
+												{activeResume.atsScore && (
+													<span className="flex items-center gap-0.5 text-[0.6rem] text-muted-foreground">
+														<ShieldCheck className="h-3 w-3" />
+														{(activeResume.atsScore as { overallScore?: number }).overallScore ?? ''}/100
+													</span>
+												)}
+											</div>
 										)}
 									</div>
 								</div>

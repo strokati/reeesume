@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DraftSelector } from '@/components/resume-editor/DraftSelector';
+import { DraftManagerSheet } from '@/components/resume-editor/DraftManagerSheet';
+import { MarkReadyButton } from '@/components/resume-editor/MarkReadyButton';
+import { TemplatePicker } from '@/components/resume-editor/TemplatePicker';
 import { ResumeEditorLeft } from '@/components/resume-editor/ResumeEditorLeft';
 import { RightPanelTabs } from '@/components/resume-editor/RightPanelTabs';
-import { markDraftReady } from '@/server/actions/resume-drafts';
-import { toast } from 'sonner';
 import type { ApplicationDetail } from '@/types/applications';
 import type { ResumeDraft } from '@prisma/client';
 
@@ -27,26 +28,18 @@ export function ResumeEditorView({
 }) {
 	const [drafts, setDrafts] = useState(initialDrafts);
 	const [activeDraft, setActiveDraftState] = useState(initialDraft);
-	const [isPending, startTransition] = useTransition();
+	const [sheetOpen, setSheetOpen] = useState(false);
 
 	function handleDraftSwitch(draft: ResumeDraft) {
 		setActiveDraftState(draft);
 	}
 
-	function handleDraftsUpdate(newDrafts: ResumeDraft[]) {
+	function handleDraftsUpdate(newDrafts: ResumeDraft[], newActiveId?: string) {
 		setDrafts(newDrafts);
-	}
-
-	function handleMarkReady() {
-		if (!activeDraft) return;
-		startTransition(async () => {
-			try {
-				await markDraftReady(activeDraft.id);
-				toast.success('Draft marked as ready');
-			} catch {
-				toast.error('Failed to mark draft as ready');
-			}
-		});
+		if (newActiveId) {
+			const found = newDrafts.find((d) => d.id === newActiveId);
+			if (found) setActiveDraftState(found);
+		}
 	}
 
 	if (!activeDraft) {
@@ -76,17 +69,21 @@ export function ResumeEditorView({
 					onDraftsUpdate={handleDraftsUpdate}
 				/>
 
+				<Button variant="ghost" size="sm" onClick={() => setSheetOpen(true)}>
+					<FolderOpen className="h-4 w-4" />
+				</Button>
+
 				<div className="flex-1" />
 
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={handleMarkReady}
-					disabled={isPending || activeDraft.status === 'ready'}
-				>
-					<Check className="h-4 w-4 mr-1" />
-					{activeDraft.status === 'ready' ? 'Ready' : 'Mark Ready'}
-				</Button>
+				<TemplatePicker
+					draftId={activeDraft.id}
+					currentTemplateId={activeDraft.templateId}
+				/>
+
+				<MarkReadyButton
+					draftId={activeDraft.id}
+					status={activeDraft.status}
+				/>
 			</div>
 
 			{/* Two-panel layout */}
@@ -98,6 +95,16 @@ export function ResumeEditorView({
 					aiConfigs={aiConfigs}
 				/>
 			</div>
+
+			{/* Draft Manager Sheet */}
+			<DraftManagerSheet
+				open={sheetOpen}
+				onOpenChange={setSheetOpen}
+				applicationId={application.id}
+				drafts={drafts}
+				activeDraftId={activeDraft.id}
+				onUpdate={handleDraftsUpdate}
+			/>
 		</div>
 	);
 }

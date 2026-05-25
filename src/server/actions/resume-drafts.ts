@@ -217,3 +217,36 @@ export async function markDraftReady(id: string): Promise<void> {
 	}
 	revalidatePath(`/applications`);
 }
+
+export async function revertDraftToDraft(id: string): Promise<void> {
+	await requireAuth();
+	try {
+		await db.resumeDraft.update({
+			where: { id },
+			data: { status: 'draft' },
+		});
+	} catch {
+		throw new Error('Failed to revert draft.');
+	}
+	revalidatePath(`/applications`);
+}
+
+export async function duplicateDraft(id: string): Promise<string> {
+	await requireAuth();
+	const draft = await db.resumeDraft.findUnique({ where: { id } });
+	if (!draft) throw new Error('Draft not found.');
+
+	const copy = await db.resumeDraft.create({
+		data: {
+			applicationId: draft.applicationId,
+			name: `Copy of ${draft.name}`,
+			content: JSON.parse(JSON.stringify(draft.content)),
+			templateId: draft.templateId,
+			isActive: false,
+			status: 'draft',
+		},
+	});
+
+	revalidatePath(`/applications/${draft.applicationId}/resume`);
+	return copy.id;
+}
