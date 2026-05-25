@@ -2,8 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FolderOpen } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Download, FileText, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { DraftSelector } from '@/components/resume-editor/DraftSelector';
 import { DraftManagerSheet } from '@/components/resume-editor/DraftManagerSheet';
 import { MarkReadyButton } from '@/components/resume-editor/MarkReadyButton';
@@ -12,6 +18,8 @@ import { ResumeEditorLeft } from '@/components/resume-editor/ResumeEditorLeft';
 import { RightPanelTabs } from '@/components/resume-editor/RightPanelTabs';
 import type { ApplicationDetail } from '@/types/applications';
 import type { ResumeDraft } from '@prisma/client';
+import { useExport } from '@/hooks/use-export';
+import { toast } from 'sonner';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 
@@ -29,6 +37,7 @@ export function ResumeEditorView({
 	const [drafts, setDrafts] = useState(initialDrafts);
 	const [activeDraft, setActiveDraftState] = useState(initialDraft);
 	const [sheetOpen, setSheetOpen] = useState(false);
+	const { exportResume, isExporting } = useExport();
 
 	function handleDraftSwitch(draft: ResumeDraft) {
 		setActiveDraftState(draft);
@@ -84,6 +93,27 @@ export function ResumeEditorView({
 					draftId={activeDraft.id}
 					status={activeDraft.status}
 				/>
+
+				<DropdownMenu>
+					<DropdownMenuTrigger render={<Button variant="outline" size="sm" disabled={isExporting} />}>
+						<Download className="h-4 w-4 mr-1" />
+						{isExporting ? 'Exporting...' : 'Export'}
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={() => exportResume(activeDraft.id, 'pdf').catch((e) => toast.error(e.message))}>
+							<FileText className="h-4 w-4 mr-2" />
+							Download PDF
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => exportResume(activeDraft.id, 'docx').catch((e) => toast.error(e.message))}>
+							<FileDown className="h-4 w-4 mr-2" />
+							Download DOCX
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => exportResume(activeDraft.id, 'pdf', true).catch((e) => toast.error(e.message))}>
+							<FileText className="h-4 w-4 mr-2" />
+							Download PDF + Cover Letter
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 
 			{/* Two-panel layout */}
