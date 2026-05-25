@@ -6,6 +6,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Bold from '@tiptap/extension-bold';
 import { ArrowLeft, FolderOpen, Sparkles, Check, RotateCcw, Bold as BoldIcon, Italic, Download } from 'lucide-react';
+import { useExport } from '@/hooks/use-export';
+import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +30,6 @@ import {
 } from '@/server/actions/cover-letters';
 import { useCoverLetterGeneration } from '@/hooks/use-cover-letter-generation';
 import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
-import { toast } from 'sonner';
 import type { ApplicationDetail } from '@/types/applications';
 import type { CoverLetterDraft } from '@prisma/client';
 
@@ -53,6 +54,7 @@ export function CoverLetterEditorView({
 		aiConfigs.find((c) => c.isDefault)?.providerId ?? aiConfigs[0]?.providerId ?? '',
 	);
 	const [isPending, startTransition] = useTransition();
+	const { exportCoverLetter, isExporting } = useExport();
 
 	const { generate, isLoading: isGenerating, error: genError } = useCoverLetterGeneration(application.id);
 
@@ -136,6 +138,11 @@ export function CoverLetterEditorView({
 		handleDraftsUpdate(updated, activeDraft!.id);
 	}
 
+	function handleExport() {
+		if (!activeDraft) return;
+		exportCoverLetter(activeDraft.id).catch((e) => toast.error(e.message));
+	}
+
 	const hasProvider = aiConfigs.length > 0;
 
 	return (
@@ -150,10 +157,8 @@ export function CoverLetterEditorView({
 				</Link>
 
 				<DropdownMenu>
-					<DropdownMenuTrigger>
-						<Button variant="outline" size="sm" className="min-w-[120px] justify-between">
-							<span className="truncate">{activeDraft.name}</span>
-						</Button>
+					<DropdownMenuTrigger render={<Button variant="outline" size="sm" className="min-w-[120px] justify-between" />}>
+						<span className="truncate">{activeDraft.name}</span>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="w-56">
 						{drafts.map((d) => (
@@ -195,8 +200,8 @@ export function CoverLetterEditorView({
 					</Button>
 				)}
 
-				<Button variant="outline" size="sm" disabled title="Export coming soon">
-					<Download className="h-4 w-4 mr-1" />Export
+				<Button variant="outline" size="sm" disabled={isExporting} onClick={handleExport}>
+					<Download className="h-4 w-4 mr-1" />{isExporting ? 'Exporting...' : 'Export'}
 				</Button>
 			</div>
 

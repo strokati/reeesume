@@ -44,11 +44,9 @@ export function TemplatePicker({
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger>
-				<Button variant="outline" size="sm">
-					<Layout className="h-4 w-4 mr-1.5" />
-					{current?.name ?? 'Template'}
-				</Button>
+			<DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
+				<Layout className="h-4 w-4 mr-1.5" />
+				{current?.name ?? 'Template'}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-64">
 				{TEMPLATES.map((t) => (
