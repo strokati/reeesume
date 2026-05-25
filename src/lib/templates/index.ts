@@ -1,4 +1,7 @@
 import { AtsSimpleTemplate } from './ats-simple/AtsSimpleTemplate';
+import { ProfessionalClassicTemplate } from './professional-classic/ProfessionalClassicTemplate';
+import { ModernMinimalTemplate } from './modern-minimal/ModernMinimalTemplate';
+import { InternationalDeTemplate } from './international-de/InternationalDeTemplate';
 import type { TemplateId, TemplateDefinition } from './types';
 
 export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
@@ -12,19 +15,19 @@ export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
 		id: 'professional-classic',
 		name: 'Professional Classic',
 		description: 'Two-column layout with subtle formatting.',
-		component: AtsSimpleTemplate,
+		component: ProfessionalClassicTemplate,
 	},
 	'modern-minimal': {
 		id: 'modern-minimal',
 		name: 'Modern Minimal',
 		description: 'Contemporary design with accent color.',
-		component: AtsSimpleTemplate,
+		component: ModernMinimalTemplate,
 	},
 	'international-de': {
 		id: 'international-de',
 		name: 'International / German-style',
 		description: 'Includes photo slot, follows DE/AT/CH conventions.',
-		component: AtsSimpleTemplate,
+		component: InternationalDeTemplate,
 	},
 };
 

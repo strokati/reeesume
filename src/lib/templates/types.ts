@@ -8,6 +8,10 @@ export interface ContactInfo {
 	linkedin?: string;
 	github?: string;
 	website?: string;
+	dateOfBirth?: string;
+	nationality?: string;
+	maritalStatus?: string;
+	photoUrl?: string;
 }
 
 export interface WorkExperienceItem {
@@ -77,6 +81,7 @@ export interface ResumeData {
 	contactInfo: ContactInfo;
 	targetTitle?: string;
 	summary?: string;
+	accentColor?: string;
 	workExperience: WorkExperienceItem[];
 	education: EducationItem[];
 	skills: SkillItem[];
