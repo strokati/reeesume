@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Table, Kanban } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,11 @@ type ViewMode = 'table' | 'kanban';
 
 const VIEW_KEY = 'tracker-view';
 
+function subscribe(cb: () => void) {
+	window.addEventListener('storage', cb);
+	return () => window.removeEventListener('storage', cb);
+}
+
 export function TrackerView({ initialData }: { initialData: TrackerRow[] }) {
 	const { data: rows } = useQuery({
 		queryKey: ['tracker'],
@@ -48,15 +53,17 @@ export function TrackerView({ initialData }: { initialData: TrackerRow[] }) {
 	const [sortKey, setSortKey] = useState<SortKey>('dateSaved');
 	const [sortDir, setSortDir] = useState<SortDir>('desc');
 	const [selectedRow, setSelectedRow] = useState<TrackerRow | null>(null);
-	const [view, setView] = useState<ViewMode>(() => {
-		if (typeof window === 'undefined') return 'table';
-		const saved = localStorage.getItem(VIEW_KEY);
-		return saved === 'kanban' ? 'kanban' : 'table';
-	});
+
+	const view = useSyncExternalStore(
+		subscribe,
+		() => (localStorage.getItem(VIEW_KEY) as ViewMode) || 'table',
+		() => 'table',
+	);
+	const [, forceUpdate] = useState(0);
 
 	function handleViewChange(v: ViewMode) {
-		setView(v);
-		try { localStorage.setItem(VIEW_KEY, v); } catch {}
+		localStorage.setItem(VIEW_KEY, v);
+		forceUpdate((n) => n + 1);
 	}
 
 	const filtered = useMemo(() => {

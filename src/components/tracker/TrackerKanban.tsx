@@ -51,6 +51,7 @@ const columnAccent: Record<string, string> = {
 	on_hold: 'border-t-gray-400 dark:border-t-gray-500',
 };
 
+const statusSet = new Set<string>(ApplicationStatusValues);
 const statusOrder = ApplicationStatusValues;
 
 function DraggableCard({
@@ -62,12 +63,11 @@ function DraggableCard({
 }) {
 	const { listeners, attributes, setNodeRef, transform, isDragging } = useDraggable({
 		id: row.id,
-		data: { applicationId: row.id, status: row.status },
 	});
 
-	const style = transform
-		? { transform: `translate(${transform.x}px, ${transform.y}px)` }
-		: undefined;
+	const style: React.CSSProperties = transform
+		? { transform: `translate(${transform.x}px, ${transform.y}px)`, zIndex: 1 }
+		: {};
 
 	return (
 		<div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -130,33 +130,35 @@ export function TrackerKanban({
 	rows: TrackerRow[];
 	onCardClick: (row: TrackerRow) => void;
 }) {
-	const [localRows, setLocalRows] = useState(rows);
 	const [activeId, setActiveId] = useState<string | null>(null);
+	const [overrides, setOverrides] = useState<Map<string, string>>(new Map());
 
-	// Sync local rows when parent data changes and no drag is in progress
-	if (rows !== localRows && activeId === null) {
-		setLocalRows(rows);
-	}
-
-	const sensors = useSensors(
-		useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-	);
+	// Apply optimistic status overrides on top of parent rows
+	const effectiveRows = useMemo(() => {
+		if (overrides.size === 0) return rows;
+		return rows.map((r) => {
+			const override = overrides.get(r.id);
+			return override ? { ...r, status: override } : r;
+		});
+	}, [rows, overrides]);
 
 	const rowsByStatus = useMemo(() => {
 		const map: Record<string, TrackerRow[]> = {};
-		for (const status of statusOrder) {
-			map[status] = [];
-		}
-		for (const row of localRows) {
+		for (const status of statusOrder) map[status] = [];
+		for (const row of effectiveRows) {
 			if (!map[row.status]) map[row.status] = [];
 			map[row.status].push(row);
 		}
 		return map;
-	}, [localRows]);
+	}, [effectiveRows]);
 
 	const activeRow = activeId
-		? localRows.find((r) => r.id === activeId) ?? null
+		? effectiveRows.find((r) => r.id === activeId) ?? null
 		: null;
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+	);
 
 	const handleDragStart = useCallback(
 		(event: { active: { id: string | number } }) => {
@@ -167,27 +169,30 @@ export function TrackerKanban({
 
 	const handleDragEnd = useCallback(
 		(event: { active: { id: string | number }; over: { id: string | number } | null }) => {
-			setActiveId(null);
 			const applicationId = String(event.active.id);
+			setActiveId(null);
+
 			const targetId = event.over?.id ? String(event.over.id) : null;
 			if (!targetId) return;
 
-			// If dropped on a card, find that card's status column
-			const targetRow = localRows.find((r) => r.id === targetId);
+			// Target might be a card (card id) or a column (status string)
+			const targetRow = effectiveRows.find((r) => r.id === targetId);
 			const newStatus = targetRow ? targetRow.status : targetId;
-			if (!statusOrder.includes(newStatus as typeof statusOrder[number])) return;
+			if (!statusSet.has(newStatus)) return;
 
-			const row = localRows.find((r) => r.id === applicationId);
+			const row = effectiveRows.find((r) => r.id === applicationId);
 			if (!row || row.status === newStatus) return;
 
-			// Optimistic update
-			setLocalRows((prev) =>
-				prev.map((r) => (r.id === applicationId ? { ...r, status: newStatus } : r)),
-			);
+			// Optimistic: store the override
+			setOverrides((prev) => {
+				const next = new Map(prev);
+				next.set(applicationId, newStatus);
+				return next;
+			});
 
 			updateApplicationStatus(applicationId, { status: newStatus });
 		},
-		[localRows],
+		[effectiveRows],
 	);
 
 	const handleDragCancel = useCallback(() => {
