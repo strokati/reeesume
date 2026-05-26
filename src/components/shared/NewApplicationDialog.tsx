@@ -118,7 +118,12 @@ function NewApplicationForm({
 							}}
 						>
 							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Select resume" />
+								{(() => {
+										const r = resumes.find((x) => x.id === selectedResumeId);
+										return r
+											? `${r.name} (${r.language.toUpperCase()})`
+											: 'Select resume';
+									})()}
 							</SelectTrigger>
 							<SelectContent>
 								{resumes.map((r) => (

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { AlertCircle } from 'lucide-react';
 import { updateApplicationResume } from '@/server/actions/applications';
 import type { MasterResumeSummary } from '@/types/master-resume';
@@ -72,7 +72,12 @@ export function ChangeResumeDialog({
 					<Label>Source Resume</Label>
 					<Select value={selectedId} onValueChange={(v) => setSelectedId(v ?? '')}>
 						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Select resume" />
+							{(() => {
+									const r = resumes.find((x) => x.id === selectedId);
+									return r
+										? `${r.name} (${r.language.toUpperCase()})`
+										: 'Select resume';
+								})()}
 						</SelectTrigger>
 						<SelectContent>
 							{resumes.map((r) => (
