@@ -59,6 +59,7 @@ export async function updateApplicationStatus(
 		throw new Error('Failed to update application status.');
 	}
 	revalidatePath('/applications');
+	revalidatePath('/tracker');
 }
 
 export async function updateExcitement(
@@ -73,6 +74,7 @@ export async function updateExcitement(
 		throw new Error('Failed to update excitement.');
 	}
 	revalidatePath('/applications');
+	revalidatePath('/tracker');
 }
 
 export async function updateApplicationTracking(
@@ -116,5 +118,32 @@ export async function deleteApplication(id: string): Promise<void> {
 		throw new Error('Failed to delete application.');
 	}
 	revalidatePath('/applications');
+	revalidatePath('/tracker');
 	redirect('/applications');
+}
+
+export async function createApplicationNote(
+	applicationId: string,
+	content: string,
+): Promise<void> {
+	await requireAuth();
+	if (!content.trim()) throw new Error('Note content cannot be empty.');
+	try {
+		await db.applicationNote.create({
+			data: { applicationId, content: content.trim() },
+		});
+	} catch {
+		throw new Error('Failed to create note.');
+	}
+	revalidatePath('/tracker');
+}
+
+export async function deleteApplicationNote(id: string): Promise<void> {
+	await requireAuth();
+	try {
+		await db.applicationNote.delete({ where: { id } });
+	} catch {
+		throw new Error('Failed to delete note.');
+	}
+	revalidatePath('/tracker');
 }
