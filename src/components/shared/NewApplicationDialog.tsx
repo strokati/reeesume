@@ -122,7 +122,7 @@ function NewApplicationForm({
 							</SelectTrigger>
 							<SelectContent>
 								{resumes.map((r) => (
-									<SelectItem key={r.id} value={r.id}>
+									<SelectItem key={r.id} value={r.id} label={`${r.name} (${r.language.toUpperCase()})`}>
 										{r.name} ({r.language.toUpperCase()}){r.isDefault ? ' — Default' : ''}
 									</SelectItem>
 								))}
