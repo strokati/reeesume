@@ -14,11 +14,9 @@ export async function getMasterResumes(userId: string): Promise<MasterResumeSumm
 }
 
 export async function getMasterResumeById(userId: string, resumeId: string) {
-	const resume = await db.masterResume.findFirst({
+	return db.masterResume.findFirst({
 		where: { id: resumeId, userId },
 	});
-	if (!resume) throw new Error('Resume not found.');
-	return resume;
 }
 
 export async function getOrCreateDefaultMasterResume(userId: string) {

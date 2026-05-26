@@ -82,7 +82,7 @@ export async function createMasterResume(
 	const resume = await db.masterResume.create({
 		data: { userId, name: validated.name, language: validated.language },
 	});
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 	return { id: resume.id };
 }
 
@@ -91,7 +91,7 @@ export async function renameMasterResume(resumeId: string, name: string): Promis
 	await verifyOwnership(userId, resumeId);
 	const validated = RenameMasterResumeSchema.parse({ name });
 	await db.masterResume.update({ where: { id: resumeId }, data: { name: validated.name } });
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function setMasterResumeLanguage(
@@ -102,7 +102,7 @@ export async function setMasterResumeLanguage(
 	await verifyOwnership(userId, resumeId);
 	const validated = SetLanguageSchema.parse({ language });
 	await db.masterResume.update({ where: { id: resumeId }, data: { language: validated.language } });
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function setDefaultMasterResume(resumeId: string): Promise<void> {
@@ -113,7 +113,7 @@ export async function setDefaultMasterResume(resumeId: string): Promise<void> {
 		db.masterResume.updateMany({ where: { userId }, data: { isDefault: false } }),
 		db.masterResume.update({ where: { id: resume.id }, data: { isDefault: true } }),
 	]);
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteMasterResume(resumeId: string): Promise<void> {
@@ -148,7 +148,7 @@ export async function deleteMasterResume(resumeId: string): Promise<void> {
 			});
 		}
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -163,7 +163,7 @@ export async function updateContactInfo(resumeId: string, data: ContactInfoInput
 	} catch {
 		throw new Error('Failed to update contact info.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function updateTargetTitle(resumeId: string, targetTitle: string): Promise<void> {
@@ -174,7 +174,7 @@ export async function updateTargetTitle(resumeId: string, targetTitle: string): 
 	} catch {
 		throw new Error('Failed to update target title.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function updateProfessionalSummary(resumeId: string, summary: string): Promise<void> {
@@ -188,7 +188,7 @@ export async function updateProfessionalSummary(resumeId: string, summary: strin
 	} catch {
 		throw new Error('Failed to update professional summary.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -207,7 +207,7 @@ export async function createWorkCompany(
 	} catch {
 		throw new Error('Failed to create company.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -222,7 +222,7 @@ export async function updateWorkCompany(
 	} catch {
 		throw new Error('Failed to update company.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteWorkCompany(id: string): Promise<void> {
@@ -232,7 +232,7 @@ export async function deleteWorkCompany(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete company.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderWorkCompanies(
@@ -250,7 +250,7 @@ export async function reorderWorkCompanies(
 	} catch {
 		throw new Error('Failed to reorder companies.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -269,7 +269,7 @@ export async function createWorkRole(
 	} catch {
 		throw new Error('Failed to create role.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -281,7 +281,7 @@ export async function updateWorkRole(id: string, data: UpdateWorkRoleInput): Pro
 	} catch {
 		throw new Error('Failed to update role.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteWorkRole(id: string): Promise<void> {
@@ -291,7 +291,7 @@ export async function deleteWorkRole(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete role.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -310,7 +310,7 @@ export async function createWorkProject(
 	} catch {
 		throw new Error('Failed to create project.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -322,7 +322,7 @@ export async function updateWorkProject(id: string, data: UpdateWorkProjectInput
 	} catch {
 		throw new Error('Failed to update project.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteWorkProject(id: string): Promise<void> {
@@ -332,7 +332,7 @@ export async function deleteWorkProject(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete project.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -351,7 +351,7 @@ export async function createEducation(
 	} catch {
 		throw new Error('Failed to create education entry.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -363,7 +363,7 @@ export async function updateEducation(id: string, data: UpdateEducationInput): P
 	} catch {
 		throw new Error('Failed to update education entry.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteEducation(id: string): Promise<void> {
@@ -373,7 +373,7 @@ export async function deleteEducation(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete education entry.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderEducation(
@@ -391,7 +391,7 @@ export async function reorderEducation(
 	} catch {
 		throw new Error('Failed to reorder education entries.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -410,7 +410,7 @@ export async function createSkill(
 	} catch {
 		throw new Error('Failed to create skill.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -422,7 +422,7 @@ export async function updateSkill(id: string, data: UpdateSkillInput): Promise<v
 	} catch {
 		throw new Error('Failed to update skill.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteSkill(id: string): Promise<void> {
@@ -432,7 +432,7 @@ export async function deleteSkill(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete skill.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderSkills(resumeId: string, orderedIds: string[]): Promise<void> {
@@ -447,7 +447,7 @@ export async function reorderSkills(resumeId: string, orderedIds: string[]): Pro
 	} catch {
 		throw new Error('Failed to reorder skills.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -466,7 +466,7 @@ export async function createCertification(
 	} catch {
 		throw new Error('Failed to create certification.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -481,7 +481,7 @@ export async function updateCertification(
 	} catch {
 		throw new Error('Failed to update certification.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteCertification(id: string): Promise<void> {
@@ -491,7 +491,7 @@ export async function deleteCertification(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete certification.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderCertifications(
@@ -509,7 +509,7 @@ export async function reorderCertifications(
 	} catch {
 		throw new Error('Failed to reorder certifications.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -528,7 +528,7 @@ export async function createAward(
 	} catch {
 		throw new Error('Failed to create award.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -540,7 +540,7 @@ export async function updateAward(id: string, data: UpdateAwardInput): Promise<v
 	} catch {
 		throw new Error('Failed to update award.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteAward(id: string): Promise<void> {
@@ -550,7 +550,7 @@ export async function deleteAward(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete award.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderAwards(resumeId: string, orderedIds: string[]): Promise<void> {
@@ -565,7 +565,7 @@ export async function reorderAwards(resumeId: string, orderedIds: string[]): Pro
 	} catch {
 		throw new Error('Failed to reorder awards.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -584,7 +584,7 @@ export async function createProject(
 	} catch {
 		throw new Error('Failed to create project.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -596,7 +596,7 @@ export async function updateProject(id: string, data: UpdateProjectInput): Promi
 	} catch {
 		throw new Error('Failed to update project.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteProject(id: string): Promise<void> {
@@ -606,7 +606,7 @@ export async function deleteProject(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete project.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderProjects(resumeId: string, orderedIds: string[]): Promise<void> {
@@ -621,7 +621,7 @@ export async function reorderProjects(resumeId: string, orderedIds: string[]): P
 	} catch {
 		throw new Error('Failed to reorder projects.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -640,7 +640,7 @@ export async function createVolunteeringRole(
 	} catch {
 		throw new Error('Failed to create volunteering role.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -655,7 +655,7 @@ export async function updateVolunteeringRole(
 	} catch {
 		throw new Error('Failed to update volunteering role.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deleteVolunteeringRole(id: string): Promise<void> {
@@ -665,7 +665,7 @@ export async function deleteVolunteeringRole(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete volunteering role.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderVolunteeringRoles(
@@ -683,7 +683,7 @@ export async function reorderVolunteeringRoles(
 	} catch {
 		throw new Error('Failed to reorder volunteering roles.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -702,7 +702,7 @@ export async function createPublication(
 	} catch {
 		throw new Error('Failed to create publication.');
 	} finally {
-		revalidatePath('/master-resume');
+		revalidatePath('/master-resume', 'layout');
 	}
 }
 
@@ -717,7 +717,7 @@ export async function updatePublication(
 	} catch {
 		throw new Error('Failed to update publication.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function deletePublication(id: string): Promise<void> {
@@ -727,7 +727,7 @@ export async function deletePublication(id: string): Promise<void> {
 	} catch {
 		throw new Error('Failed to delete publication.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 export async function reorderPublications(
@@ -745,7 +745,7 @@ export async function reorderPublications(
 	} catch {
 		throw new Error('Failed to reorder publications.');
 	}
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
 
 // =============================================================================
@@ -948,5 +948,5 @@ export async function applyImportedResume(
 		}
 	});
 
-	revalidatePath('/master-resume');
+	revalidatePath('/master-resume', 'layout');
 }
