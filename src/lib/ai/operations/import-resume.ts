@@ -32,9 +32,10 @@ export async function importResume(userId: string, fileText: string, providerId:
 			}
 
 			if (extractedObject) {
-				const companies = extractedObject.workCompanies?.length ?? 0;
-				const edu = extractedObject.educations?.length ?? 0;
-				const skills = extractedObject.skills?.length ?? 0;
+				const obj = extractedObject as Record<string, unknown>;
+				const companies = (obj.workCompanies as unknown[])?.length ?? 0;
+				const edu = (obj.educations as unknown[])?.length ?? 0;
+				const skills = (obj.skills as unknown[])?.length ?? 0;
 				console.log(`[import-resume] Extracted: ${companies} companies, ${edu} educations, ${skills} skills`);
 			}
 		},

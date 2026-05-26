@@ -125,6 +125,22 @@ export const UpdatePublicationSchema = CreatePublicationSchema.partial();
 // Reorder
 export const ReorderSchema = z.array(z.string().min(1));
 
+// Multi-resume management
+export const CreateMasterResumeSchema = z.object({
+	name: z.string().min(1).max(60),
+	language: z.string().min(2).max(10),
+});
+
+export const RenameMasterResumeSchema = z.object({
+	name: z.string().min(1).max(60),
+});
+
+export const SetLanguageSchema = z.object({
+	language: z.string().min(2).max(10),
+});
+
+export type CreateMasterResumeInput = z.infer<typeof CreateMasterResumeSchema>;
+
 // Type exports
 export type ContactInfoInput = z.infer<typeof ContactInfoSchema>;
 export type CreateWorkCompanyInput = z.infer<typeof CreateWorkCompanySchema>;

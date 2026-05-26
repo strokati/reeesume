@@ -6,6 +6,7 @@ export async function getApplications(userId: string): Promise<ApplicationWithVa
 		where: { vacancy: { userId } },
 		include: {
 			vacancy: true,
+			masterResume: { select: { id: true, name: true, language: true } },
 			_count: {
 				select: {
 					resumeDrafts: true,
@@ -25,6 +26,7 @@ export async function getApplicationById(
 		where: { id, vacancy: { userId } },
 		include: {
 			vacancy: true,
+			masterResume: { select: { id: true, name: true, language: true } },
 			resumeDrafts: { orderBy: { createdAt: 'desc' } },
 			coverLetterDrafts: { orderBy: { createdAt: 'desc' } },
 		},
