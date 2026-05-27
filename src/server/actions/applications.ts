@@ -21,6 +21,12 @@ async function requireAuth(): Promise<string> {
 export async function createApplication(data: CreateApplicationInput): Promise<string> {
 	const userId = await requireAuth();
 	const validated = CreateApplicationSchema.parse(data);
+
+	const resume = await db.masterResume.findFirst({
+		where: { id: validated.masterResumeId, userId },
+	});
+	if (!resume) throw new Error('Invalid master resume.');
+
 	try {
 		const vacancy = await db.vacancy.create({
 			data: {
@@ -37,7 +43,7 @@ export async function createApplication(data: CreateApplicationInput): Promise<s
 			},
 		});
 		const application = await db.application.create({
-			data: { vacancyId: vacancy.id },
+			data: { vacancyId: vacancy.id, masterResumeId: validated.masterResumeId },
 		});
 		return application.id;
 	} catch {
@@ -146,4 +152,28 @@ export async function deleteApplicationNote(id: string): Promise<void> {
 		throw new Error('Failed to delete note.');
 	}
 	revalidatePath('/tracker');
+}
+
+export async function updateApplicationResume(
+	applicationId: string,
+	masterResumeId: string,
+): Promise<void> {
+	const userId = await requireAuth();
+
+	const [application, resume] = await Promise.all([
+		db.application.findFirst({ where: { id: applicationId, vacancy: { userId } } }),
+		db.masterResume.findFirst({ where: { id: masterResumeId, userId } }),
+	]);
+	if (!application) throw new Error('Application not found.');
+	if (!resume) throw new Error('Invalid master resume.');
+
+	try {
+		await db.application.update({
+			where: { id: applicationId },
+			data: { masterResumeId },
+		});
+	} catch {
+		throw new Error('Failed to update source resume.');
+	}
+	revalidatePath(`/applications/${applicationId}`);
 }

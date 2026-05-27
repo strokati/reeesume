@@ -13,6 +13,8 @@ import {
 	Mail,
 	Trash2,
 	ShieldCheck,
+	BookOpen,
+	Pencil,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,8 +35,10 @@ import {
 	updateApplicationTracking,
 	deleteApplication,
 } from '@/server/actions/applications';
+import { ChangeResumeDialog } from '@/components/applications/ChangeResumeDialog';
 import type { ApplicationDetail } from '@/types/applications';
 import type { ApplicationStatus } from '@/lib/validations/applications';
+import type { MasterResumeSummary } from '@/types/master-resume';
 
 type AiConfig = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 
@@ -96,12 +100,15 @@ function TrackingField({
 export function ApplicationDetailView({
 	application,
 	aiConfigs,
+	resumes,
 }: {
 	application: ApplicationDetail;
 	aiConfigs: AiConfig[];
+	resumes: MasterResumeSummary[];
 }) {
 	const [isPending, startTransition] = useTransition();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [showChangeResumeDialog, setShowChangeResumeDialog] = useState(false);
 	const { vacancy } = application;
 
 	const activeResume = application.resumeDrafts.find((d) => d.isActive) ?? application.resumeDrafts[0];
@@ -297,6 +304,31 @@ export function ApplicationDetailView({
 						</CardContent>
 					</Card>
 
+					{/* Source Resume */}
+					<Card>
+						<CardContent className="p-5 space-y-3">
+							<h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+								Source Resume
+							</h3>
+							<div className="flex items-center justify-between gap-3">
+								<div className="flex items-center gap-2 min-w-0">
+									<BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+									<div className="min-w-0">
+										<p className="text-sm font-medium truncate">
+											{application.masterResume
+												? `${application.masterResume.name} (${application.masterResume.language.toUpperCase()})`
+												: 'Default resume'}
+										</p>
+									</div>
+								</div>
+								<Button size="sm" variant="outline" onClick={() => setShowChangeResumeDialog(true)}>
+									<Pencil className="h-3.5 w-3.5 mr-1" />
+									Change
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+
 					{/* Documents */}
 					<Card>
 						<CardContent className="p-5 space-y-4">
@@ -400,6 +432,16 @@ export function ApplicationDetailView({
 					</div>
 				</DialogContent>
 			</Dialog>
+
+			{/* Change source resume dialog */}
+			<ChangeResumeDialog
+				applicationId={application.id}
+				resumes={resumes}
+				currentResumeId={application.masterResumeId}
+				hasDrafts={application.resumeDrafts.length > 0}
+				open={showChangeResumeDialog}
+				onOpenChange={setShowChangeResumeDialog}
+			/>
 		</div>
 	);
 }

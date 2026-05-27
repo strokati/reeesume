@@ -5,6 +5,7 @@ export const IMPORT_RESUME_SYSTEM = `You are an expert resume parser that handle
 Your task: extract ALL information from the resume and output a single valid JSON object matching this exact structure:
 
 {
+  "detectedLanguage": "de",
   "contactInfo": {
     "name": "string",
     "email": "string",
@@ -111,14 +112,19 @@ Your task: extract ALL information from the resume and output a single valid JSO
 Rules:
 - The resume may be in German or any other language — recognize all section headings regardless of language.
 - Extract EVERY piece of information. Be thorough. Do not skip sections.
+- LinkedIn URLs: extract any linkedin.com/in/... URL into contactInfo.linkedin. Do NOT put it in website.
+- GitHub URLs: extract any github.com/... URL into contactInfo.github. Do NOT put it in website.
+- If the resume header contains URLs, classify them: linkedin.com → linkedin, github.com → github, everything else → website.
 - German section headings to recognize: Berufserfahrung/Berufliche Erfahrung = workCompanies; Ausbildung/Studium = educations; Kenntnisse/Fähigkeiten/Kompetenzen = skills; Zertifikate/Zertifizierungen = certifications; Auszeichnungen/Preise = awards; Projekte = projects; Ehrenamt/Engagement = volunteeringRoles; Publikationen/Veröffentlichungen = publications; Profil/Über mich/Zusammenfassung = professionalSummary.
-- Rewrite vague responsibilities as action-verb-led bullet points (in English).
-- Translate all extracted content to English.
+- Rewrite vague responsibilities as action-verb-led bullet points. Keep them in the original language.
+- Preserve the original language of the resume. Do NOT translate. Extract content as-is in the source language.
+- "detectedLanguage": 2-letter BCP-47 language code of the source document (e.g. "de", "en", "fr").
 - Dates: keep the original format (e.g. "Jan 2020", "2020-01", "seit 2020" → "2020–present").
 - Omit fields that are truly absent. Do not invent data.
 - Output ONLY the JSON object, no prose, no markdown fences.`;
 
 export const ImportedResumeSchema = z.object({
+	detectedLanguage: z.string().optional(),
 	contactInfo: z
 		.object({
 			name: z.string().optional(),

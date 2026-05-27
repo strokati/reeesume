@@ -28,6 +28,9 @@ import {
 	CreatePublicationSchema,
 	UpdatePublicationSchema,
 	ReorderSchema,
+	CreateMasterResumeSchema,
+	RenameMasterResumeSchema,
+	SetLanguageSchema,
 } from '@/lib/validations/master-resume';
 import type {
 	ContactInfoInput,
@@ -51,6 +54,7 @@ import type {
 	UpdateVolunteeringRoleInput,
 	CreatePublicationInput,
 	UpdatePublicationInput,
+	CreateMasterResumeInput,
 } from '@/lib/validations/master-resume';
 import type { ImportedResumeData } from '@/lib/ai/prompts/import-resume';
 
@@ -58,6 +62,93 @@ async function requireAuth(): Promise<string> {
 	const session = await auth();
 	if (!session && process.env.AUTH_MODE === 'email_otp') redirect('/login');
 	return session?.user?.id ?? 'local-user';
+}
+
+// =============================================================================
+// Multi-Resume Management
+// =============================================================================
+
+async function verifyOwnership(userId: string, resumeId: string) {
+	const resume = await db.masterResume.findFirst({ where: { id: resumeId, userId } });
+	if (!resume) throw new Error('Resume not found.');
+	return resume;
+}
+
+export async function createMasterResume(
+	data: CreateMasterResumeInput,
+): Promise<{ id: string }> {
+	const userId = await requireAuth();
+	const validated = CreateMasterResumeSchema.parse(data);
+	const resume = await db.masterResume.create({
+		data: { userId, name: validated.name, language: validated.language },
+	});
+	revalidatePath('/master-resume');
+	return { id: resume.id };
+}
+
+export async function renameMasterResume(resumeId: string, name: string): Promise<void> {
+	const userId = await requireAuth();
+	await verifyOwnership(userId, resumeId);
+	const validated = RenameMasterResumeSchema.parse({ name });
+	await db.masterResume.update({ where: { id: resumeId }, data: { name: validated.name } });
+	revalidatePath('/master-resume');
+}
+
+export async function setMasterResumeLanguage(
+	resumeId: string,
+	language: string,
+): Promise<void> {
+	const userId = await requireAuth();
+	await verifyOwnership(userId, resumeId);
+	const validated = SetLanguageSchema.parse({ language });
+	await db.masterResume.update({ where: { id: resumeId }, data: { language: validated.language } });
+	revalidatePath('/master-resume');
+}
+
+export async function setDefaultMasterResume(resumeId: string): Promise<void> {
+	const userId = await requireAuth();
+	const resume = await verifyOwnership(userId, resumeId);
+
+	await db.$transaction([
+		db.masterResume.updateMany({ where: { userId }, data: { isDefault: false } }),
+		db.masterResume.update({ where: { id: resume.id }, data: { isDefault: true } }),
+	]);
+	revalidatePath('/master-resume');
+}
+
+export async function deleteMasterResume(resumeId: string): Promise<void> {
+	const userId = await requireAuth();
+	const resume = await verifyOwnership(userId, resumeId);
+
+	const totalCount = await db.masterResume.count({ where: { userId } });
+	if (totalCount <= 1) {
+		throw new Error('Cannot delete the only master resume.');
+	}
+
+	const linkedApps = await db.application.count({ where: { masterResumeId: resumeId } });
+	if (linkedApps > 0) {
+		throw new Error(
+			`Cannot delete a resume linked to ${linkedApps} application(s). Change the application's resume first.`,
+		);
+	}
+
+	const wasDefault = resume.isDefault;
+
+	await db.masterResume.delete({ where: { id: resumeId } });
+
+	if (wasDefault) {
+		const nextDefault = await db.masterResume.findFirst({
+			where: { userId },
+			orderBy: { updatedAt: 'desc' },
+		});
+		if (nextDefault) {
+			await db.masterResume.update({
+				where: { id: nextDefault.id },
+				data: { isDefault: true },
+			});
+		}
+	}
+	revalidatePath('/master-resume');
 }
 
 // =============================================================================
@@ -686,7 +777,22 @@ export async function applyImportedResume(
 		}
 
 		const flatUpdates: Record<string, unknown> = {};
-		if (data.contactInfo) flatUpdates.contactInfo = ContactInfoSchema.parse(data.contactInfo);
+		if (data.contactInfo) {
+			const ci = { ...data.contactInfo } as Record<string, unknown>;
+			for (const [key, val] of Object.entries(ci)) {
+				if (typeof val !== 'string') continue;
+				const lower = val.toLowerCase();
+				if (!ci.linkedin && lower.includes('linkedin.com')) {
+					ci.linkedin = val;
+					if (key === 'website') delete ci.website;
+				}
+				if (!ci.github && lower.includes('github.com')) {
+					ci.github = val;
+					if (key === 'website') delete ci.website;
+				}
+			}
+			flatUpdates.contactInfo = ContactInfoSchema.parse(ci);
+		}
 		if (data.targetTitle) flatUpdates.targetTitle = data.targetTitle;
 		if (data.professionalSummary) flatUpdates.professionalSummary = data.professionalSummary;
 		if (Object.keys(flatUpdates).length > 0) {

@@ -1,3 +1,5 @@
+import { languageLabel } from '@/lib/utils/language';
+
 export type RephraseDirection = 'stronger' | 'concise' | 'quantified' | 'formal' | 'casual';
 
 const DIRECTION_INSTRUCTIONS: Record<RephraseDirection, string> = {
@@ -8,8 +10,12 @@ const DIRECTION_INSTRUCTIONS: Record<RephraseDirection, string> = {
 	casual: 'Rewrite this bullet point to sound more natural and conversational. Less stiff, more approachable, while remaining appropriate for a resume.',
 };
 
-export function buildRephrasePrompt(original: string, direction: RephraseDirection, context: string): string {
+export function buildRephrasePrompt(original: string, direction: RephraseDirection, context: string, language?: string): string {
+	const languageHint = language ? `\nTarget language: ${languageLabel(language)}.` : '';
+
 	return `${DIRECTION_INSTRUCTIONS[direction]}
+
+Rephrase the following text. Keep it in the same language as the input.${languageHint}
 
 Context: The person's role is "${context}".
 

@@ -1,6 +1,6 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { RESUME_SUGGESTIONS_SYSTEM, buildResumeSuggestionsPrompt } from '@/lib/ai/prompts/resume-suggestions';
+import { buildResumeSuggestionsSystem, buildResumeSuggestionsPrompt } from '@/lib/ai/prompts/resume-suggestions';
 import { summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { db } from '@/lib/db/client';
@@ -14,7 +14,7 @@ export async function getResumeSuggestions(
 
 	const application = await db.application.findUnique({
 		where: { id: applicationId },
-		include: { vacancy: true },
+		include: { vacancy: true, masterResume: { select: { language: true } } },
 	});
 
 	if (!application || !application.vacancy) {
@@ -25,7 +25,8 @@ export async function getResumeSuggestions(
 		throw new Error('No job posting text to analyze.');
 	}
 
-	const fullResume = await getFullMasterResume(userId);
+	const language = application.masterResume?.language ?? 'en';
+	const fullResume = await getFullMasterResume(userId, application.masterResumeId);
 
 	const workItems = (fullResume.workCompanies ?? []).flatMap((c) =>
 		c.roles.map((r) => ({
@@ -66,7 +67,7 @@ export async function getResumeSuggestions(
 
 	const result = streamText({
 		model,
-		system: RESUME_SUGGESTIONS_SYSTEM,
+		system: buildResumeSuggestionsSystem(language),
 		prompt,
 		onFinish: async (event) => {
 			const durationMs = Date.now() - startTime;

@@ -1,6 +1,6 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { COVER_LETTER_SYSTEM, buildCoverLetterPrompt, type CoverLetterTone } from '@/lib/ai/prompts/cover-letter';
+import { buildCoverLetterSystem, buildCoverLetterPrompt, type CoverLetterTone } from '@/lib/ai/prompts/cover-letter';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
 import { resumeContentToText } from '@/lib/ai/prompts/ats-check';
@@ -16,7 +16,7 @@ export async function generateCoverLetter(
 
 	const application = await db.application.findUnique({
 		where: { id: applicationId },
-		include: { vacancy: true, resumeDrafts: { orderBy: { createdAt: 'desc' }, take: 1 } },
+		include: { vacancy: true, masterResume: { select: { language: true } }, resumeDrafts: { orderBy: { createdAt: 'desc' }, take: 1 } },
 	});
 
 	if (!application || !application.vacancy) {
@@ -27,7 +27,8 @@ export async function generateCoverLetter(
 		throw new Error('No job posting text available.');
 	}
 
-	const fullResume = await getFullMasterResume(userId);
+	const language = application.masterResume?.language ?? 'en';
+	const fullResume = await getFullMasterResume(userId, application.masterResumeId);
 	const resumeSummary = summarizeMasterResume(fullResume as unknown as Parameters<typeof summarizeMasterResume>[0]);
 
 	const activeDraft = application.resumeDrafts[0];
@@ -42,7 +43,7 @@ export async function generateCoverLetter(
 
 	const result = streamText({
 		model,
-		system: COVER_LETTER_SYSTEM,
+		system: buildCoverLetterSystem(language),
 		prompt: buildCoverLetterPrompt({
 			tone,
 			resumeText,

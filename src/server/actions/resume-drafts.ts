@@ -13,8 +13,8 @@ async function requireAuth(): Promise<string> {
 	return session?.user?.id ?? 'local-user';
 }
 
-async function buildInitialContent(userId: string): Promise<ResumeDraftContent> {
-	const full = await getFullMasterResume(userId);
+async function buildInitialContent(userId: string, masterResumeId: string | null): Promise<ResumeDraftContent> {
+	const full = await getFullMasterResume(userId, masterResumeId);
 	const contactInfo = (full as { contactInfo?: unknown }).contactInfo as Record<string, unknown> | null;
 
 	return {
@@ -117,7 +117,7 @@ export async function createResumeDraft(
 	const application = await db.application.findUnique({ where: { id: applicationId } });
 	if (!application) throw new Error('Application not found.');
 
-	const content = await buildInitialContent(userId);
+	const content = await buildInitialContent(userId, application.masterResumeId);
 	const count = await db.resumeDraft.count({ where: { applicationId } });
 
 	const draft = await db.resumeDraft.create({

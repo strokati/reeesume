@@ -9,13 +9,14 @@ export async function rephraseBullet(
 	context: string,
 	providerId: string,
 	userId: string,
+	language?: string,
 ) {
 	const startTime = Date.now();
 	const { model, modelName } = await getProviderForUser(userId, providerId);
 
 	const result = streamText({
 		model,
-		prompt: buildRephrasePrompt(original, direction, context),
+		prompt: buildRephrasePrompt(original, direction, context, language),
 		onFinish: async (event) => {
 			const durationMs = Date.now() - startTime;
 			const usage = event.totalUsage;

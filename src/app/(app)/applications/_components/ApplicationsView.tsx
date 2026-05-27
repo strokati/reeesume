@@ -7,11 +7,14 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { ApplicationCard } from '@/components/shared/ApplicationCard';
 import { NewApplicationButton } from '@/components/shared/NewApplicationButton';
 import type { ApplicationWithVacancy } from '@/types/applications';
+import type { MasterResumeSummary } from '@/types/master-resume';
 
 export function ApplicationsView({
 	initialData,
+	resumes,
 }: {
 	initialData: ApplicationWithVacancy[];
+	resumes: MasterResumeSummary[];
 }) {
 	const { data: applications } = useQuery({
 		queryKey: ['applications'],
@@ -25,7 +28,7 @@ export function ApplicationsView({
 			<PageHeader
 				title="Applications"
 				description="Track your job applications from saved to offer."
-				action={<NewApplicationButton />}
+				action={<NewApplicationButton resumes={resumes} />}
 			/>
 
 			{applications.length === 0 ? (
@@ -33,7 +36,7 @@ export function ApplicationsView({
 					icon={<Briefcase className="h-8 w-8" />}
 					title="No applications yet"
 					description="Start by adding your first job application. You can paste a job posting for AI analysis."
-					action={<NewApplicationButton />}
+					action={<NewApplicationButton resumes={resumes} />}
 				/>
 			) : (
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

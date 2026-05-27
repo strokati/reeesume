@@ -9,14 +9,14 @@ export async function POST(req: NextRequest) {
 	}
 	const userId = session?.user?.id ?? 'local-user';
 
-	let body: { original?: string; direction?: string; context?: string; providerId?: string };
+	let body: { original?: string; direction?: string; context?: string; providerId?: string; language?: string };
 	try {
 		body = await req.json();
 	} catch {
 		return new Response('Invalid JSON', { status: 400 });
 	}
 
-	const { original, direction, context, providerId } = body;
+	const { original, direction, context, providerId, language } = body;
 	if (!original || !direction || !providerId) {
 		return new Response('Missing original, direction, or providerId', { status: 400 });
 	}
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
 			context ?? '',
 			providerId,
 			userId,
+			language,
 		);
 		return result.toTextStreamResponse();
 	} catch (err) {

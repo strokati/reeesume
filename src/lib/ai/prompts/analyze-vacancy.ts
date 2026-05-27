@@ -1,4 +1,6 @@
-export const ANALYZE_VACANCY_SYSTEM = `You are an expert career coach and ATS optimizer. Analyze job postings and return a structured JSON breakdown.
+import { languageLabel } from '@/lib/utils/language';
+
+const ANALYZE_VACANCY_BASE = `You are an expert career coach and ATS optimizer. Analyze job postings and return a structured JSON breakdown.
 
 You MUST respond with ONLY valid JSON matching this exact schema (no markdown, no explanation):
 
@@ -17,6 +19,17 @@ You MUST respond with ONLY valid JSON matching this exact schema (no markdown, n
 }
 
 Be specific and actionable. Extract 5-10 items per list where possible.`;
+
+export function buildAnalyzeVacancySystem(language: string): string {
+	return `${ANALYZE_VACANCY_BASE}
+
+The candidate's target market is: ${languageLabel(language)} (language code: ${language}).
+Tailor your analysis for this market:
+- For "de": apply DACH-market conventions (Lebenslauf style, DACH ATS tools, German job titles).
+- For "en": apply international / English-speaking market conventions.
+- For other languages: apply conventions typical of that language's job market.
+Output language: English (for consistency in the app UI), but flag market-specific terms.`;
+}
 
 export function analyzeVacancyPrompt(vacancyText: string, masterResumeSummary: string): string {
 	return `## Job Posting

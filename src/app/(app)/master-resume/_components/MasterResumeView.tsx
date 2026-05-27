@@ -2,6 +2,7 @@
 
 import { PageHeader } from '@/components/shared/PageHeader';
 import { ImportResumeButton } from '@/components/master-resume/ImportResumeButton';
+import { ResumeSwitcher } from '@/components/master-resume/ResumeSwitcher';
 import { SectionCard } from '@/components/master-resume/SectionCard';
 import { ContactInfoForm } from '@/components/master-resume/ContactInfoForm';
 import { TargetTitleForm } from '@/components/master-resume/TargetTitleForm';
@@ -17,11 +18,26 @@ import { PublicationSection } from '@/components/master-resume/PublicationSectio
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import type { ContactInfoInput } from '@/lib/validations/master-resume';
-import type { WorkCompanyWithRoles } from '@/types/master-resume';
+import type { MasterResumeSummary, WorkCompanyWithRoles } from '@/types/master-resume';
 import type { Education, Skill, Certification, Award, Project, VolunteeringRole, Publication } from '@prisma/client';
+
+const LANGUAGE_LABELS: Record<string, string> = {
+	en: 'English',
+	de: 'German',
+	fr: 'French',
+	es: 'Spanish',
+	it: 'Italian',
+	nl: 'Dutch',
+	pl: 'Polish',
+};
+
+function languageLabel(code: string) {
+	return LANGUAGE_LABELS[code] ?? code.toUpperCase();
+}
 
 export function MasterResumeView({
 	resume,
+	resumes,
 	companies,
 	education,
 	skills,
@@ -34,10 +50,13 @@ export function MasterResumeView({
 }: {
 	resume: {
 		id: string;
+		name: string;
+		language: string;
 		contactInfo?: unknown;
 		targetTitle?: string | null;
 		professionalSummary?: string | null;
 	};
+	resumes: MasterResumeSummary[];
 	companies: WorkCompanyWithRoles[];
 	education: Education[];
 	skills: Skill[];
@@ -52,8 +71,12 @@ export function MasterResumeView({
 
 	return (
 		<div className="space-y-6">
+			<ResumeSwitcher resumes={resumes} activeResumeId={resume.id} />
 			<div className="flex items-start justify-between">
-				<PageHeader title="Master Resume" description="Your complete career history — the single source of truth." />
+				<PageHeader
+					title={resume.name}
+					description={`${languageLabel(resume.language)} master resume — your complete career history.`}
+				/>
 				<ImportResumeButton resumeId={resume.id} configs={aiConfigs} />
 			</div>
 
@@ -66,15 +89,15 @@ export function MasterResumeView({
 					</Button>
 				}
 			>
-				<ContactInfoForm resumeId={resume.id} defaultValues={contactInfo} />
+				<ContactInfoForm key={JSON.stringify(contactInfo)} resumeId={resume.id} defaultValues={contactInfo} />
 			</SectionCard>
 
 			<SectionCard title="Target Title">
-				<TargetTitleForm resumeId={resume.id} defaultValue={resume.targetTitle} />
+				<TargetTitleForm key={resume.targetTitle} resumeId={resume.id} defaultValue={resume.targetTitle} />
 			</SectionCard>
 
 			<SectionCard title="Professional Summary" collapsible>
-				<SummaryEditor resumeId={resume.id} defaultValue={resume.professionalSummary} />
+				<SummaryEditor key={resume.professionalSummary} resumeId={resume.id} defaultValue={resume.professionalSummary} />
 			</SectionCard>
 
 			<WorkExperienceSection companies={companies} resumeId={resume.id} />

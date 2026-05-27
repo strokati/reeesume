@@ -9,8 +9,8 @@ import { getFullMasterResume } from '@/server/queries/master-resume';
 
 export const dynamic = 'force-dynamic';
 
-async function buildInitialContent(userId: string) {
-	const full = await getFullMasterResume(userId);
+async function buildInitialContent(userId: string, masterResumeId: string | null) {
+	const full = await getFullMasterResume(userId, masterResumeId);
 	const contactInfo = (full as { contactInfo?: unknown }).contactInfo as Record<string, unknown> | null;
 
 	return {
@@ -124,7 +124,7 @@ export default async function ResumeEditorPage({
 
 	let activeDraft = await getActiveResumeDraft(applicationId);
 	if (!activeDraft && drafts.length === 0) {
-		const content = await buildInitialContent(userId);
+		const content = await buildInitialContent(userId, application.masterResumeId ?? null);
 		activeDraft = await db.resumeDraft.create({
 			data: {
 				applicationId,

@@ -1,4 +1,6 @@
-export const RESUME_SUGGESTIONS_SYSTEM = `You are an expert resume writer and ATS optimizer. Given a job posting and a candidate's full master resume, suggest which items to include in a tailored resume for this specific application.
+import { languageLabel } from '@/lib/utils/language';
+
+const RESUME_SUGGESTIONS_BASE = `You are an expert resume writer and ATS optimizer. Given a job posting and a candidate's full master resume, suggest which items to include in a tailored resume for this specific application.
 
 You MUST respond with ONLY valid JSON matching this exact schema (no markdown, no explanation):
 
@@ -42,6 +44,14 @@ Rules:
 - sectionOrder should prioritize the most relevant sections first.
 - Be selective: only include items that genuinely strengthen the application.
 - If the vacancy analysis is available, use its keywords and requirements to guide suggestions.`;
+
+export function buildResumeSuggestionsSystem(language: string): string {
+	return `${RESUME_SUGGESTIONS_BASE}
+
+Output language: ${languageLabel(language)}.
+Write all suggested bullets and the summary rewrite in ${languageLabel(language)}.
+Apply ${languageLabel(language)}-market resume conventions.`;
+}
 
 export interface ResumeSuggestions {
 	summary: {

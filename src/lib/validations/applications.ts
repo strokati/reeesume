@@ -23,6 +23,7 @@ export const CreateApplicationSchema = z.object({
 	currency: z.string().optional(),
 	sourceUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
 	rawText: z.string().optional(),
+	masterResumeId: z.string().min(1),
 });
 
 export const UpdateApplicationStatusSchema = z.object({

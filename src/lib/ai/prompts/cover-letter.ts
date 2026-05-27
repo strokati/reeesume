@@ -1,3 +1,5 @@
+import { languageLabel } from '@/lib/utils/language';
+
 export type CoverLetterTone = 'professional' | 'confident' | 'warm';
 
 const TONE_INSTRUCTIONS: Record<CoverLetterTone, string> = {
@@ -6,7 +8,7 @@ const TONE_INSTRUCTIONS: Record<CoverLetterTone, string> = {
 	warm: `Write with a storytelling approach. Build personal connection through narrative. Express genuine enthusiasm. Balance professionalism with personality.`,
 };
 
-export const COVER_LETTER_SYSTEM = `You are an expert cover letter writer. Generate a cover letter based on the candidate's resume and the job posting.
+const COVER_LETTER_BASE = `You are an expert cover letter writer. Generate a cover letter based on the candidate's resume and the job posting.
 
 You MUST respond with ONLY valid JSON matching this schema (no markdown, no explanation):
 
@@ -24,6 +26,20 @@ Rules:
 - Reference specific experiences from the resume that match the job requirements.
 - Do NOT repeat the resume verbatim — synthesize and connect to the role.
 - Include a professional closing.`;
+
+export function buildCoverLetterSystem(language: string): string {
+	return `${COVER_LETTER_BASE}
+
+Write the cover letter in ${languageLabel(language)}.
+Apply ${languageLabel(language)}-market professional conventions for cover letters.
+For German ("de"):
+  - Use formal "Sie" address
+  - Include: Betreff line, formal greeting (Sehr geehrte/r ...), Einleitung, Hauptteil, Schluss, formal closing (Mit freundlichen Grüßen)
+  - Tone options: "professional" = sachlich, "confident" = selbstbewusst, "warm" = persönlich
+For English ("en"):
+  - Standard international cover letter format
+  - Tone options as defined in the system prompt`;
+}
 
 export function buildCoverLetterPrompt(params: {
 	tone: CoverLetterTone;

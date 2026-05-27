@@ -1,6 +1,6 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { ANALYZE_VACANCY_SYSTEM, analyzeVacancyPrompt, summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
+import { buildAnalyzeVacancySystem, analyzeVacancyPrompt, summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { db } from '@/lib/db/client';
 
@@ -13,21 +13,22 @@ export async function analyzeVacancy(
 
 	const application = await db.application.findUnique({
 		where: { id: applicationId },
-		include: { vacancy: true },
+		include: { vacancy: true, masterResume: { select: { language: true } } },
 	});
 
 	if (!application || !application.vacancy.rawText) {
 		throw new Error('Application not found or vacancy has no text to analyze.');
 	}
 
-	const fullResume = await getFullMasterResume(userId);
+	const language = application.masterResume?.language ?? 'en';
+	const fullResume = await getFullMasterResume(userId, application.masterResumeId);
 	const resumeSummary = summarizeMasterResume(fullResume as unknown as Parameters<typeof summarizeMasterResume>[0]);
 
 	const { model, modelName } = await getProviderForUser(userId, providerId);
 
 	const result = streamText({
 		model,
-		system: ANALYZE_VACANCY_SYSTEM,
+		system: buildAnalyzeVacancySystem(language),
 		prompt: analyzeVacancyPrompt(application.vacancy.rawText, resumeSummary),
 		onFinish: async (event) => {
 			const durationMs = Date.now() - startTime;

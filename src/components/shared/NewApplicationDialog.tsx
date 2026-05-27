@@ -22,13 +22,25 @@ import {
 	CreateApplicationSchema,
 	type CreateApplicationInput,
 } from '@/lib/validations/applications';
+import type { MasterResumeSummary } from '@/types/master-resume';
 
 const locationTypes = ['On-site', 'Hybrid', 'Remote'] as const;
 
-function NewApplicationForm({ onSuccess }: { onSuccess: (id: string) => void }) {
+function NewApplicationForm({
+	resumes,
+	onSuccess,
+}: {
+	resumes: MasterResumeSummary[];
+	onSuccess: (id: string) => void;
+}) {
 	const [step, setStep] = useState(1);
 	const [isPending, startTransition] = useTransition();
 	const [locationType, setLocationType] = useState('');
+	const [selectedResumeId, setSelectedResumeId] = useState(
+		() => resumes.find((r) => r.isDefault)?.id ?? resumes[0]?.id ?? '',
+	);
+
+	const defaultResumeId = resumes.find((r) => r.isDefault)?.id ?? resumes[0]?.id ?? '';
 
 	const form = useForm<CreateApplicationInput>({
 		resolver: zodResolver(CreateApplicationSchema),
@@ -42,6 +54,7 @@ function NewApplicationForm({ onSuccess }: { onSuccess: (id: string) => void }) 
 			currency: 'USD',
 			sourceUrl: '',
 			rawText: '',
+			masterResumeId: defaultResumeId,
 		},
 		mode: 'onBlur',
 	});
@@ -56,7 +69,7 @@ function NewApplicationForm({ onSuccess }: { onSuccess: (id: string) => void }) 
 	function onSubmit(data: CreateApplicationInput) {
 		startTransition(async () => {
 			try {
-				const id = await createApplication(data);
+				const id = await createApplication({ ...data, masterResumeId: selectedResumeId });
 				toast.success('Application created');
 				onSuccess(id);
 			} catch {
@@ -93,6 +106,33 @@ function NewApplicationForm({ onSuccess }: { onSuccess: (id: string) => void }) 
 						{formState.errors.jobTitle && (
 							<p className="text-xs text-destructive">{formState.errors.jobTitle.message}</p>
 						)}
+					</div>
+
+					<div className="space-y-1.5">
+						<Label>Source Resume</Label>
+						<Select
+							value={selectedResumeId}
+							onValueChange={(v) => {
+								setSelectedResumeId(v ?? '');
+								setValue('masterResumeId', v ?? '');
+							}}
+						>
+							<SelectTrigger className="w-full">
+								{(() => {
+										const r = resumes.find((x) => x.id === selectedResumeId);
+										return r
+											? `${r.name} (${r.language.toUpperCase()})`
+											: 'Select resume';
+									})()}
+							</SelectTrigger>
+							<SelectContent>
+								{resumes.map((r) => (
+									<SelectItem key={r.id} value={r.id} label={`${r.name} (${r.language.toUpperCase()})`}>
+										{r.name} ({r.language.toUpperCase()}){r.isDefault ? ' — Default' : ''}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					<div className="grid gap-4 sm:grid-cols-2">
@@ -186,9 +226,11 @@ function NewApplicationForm({ onSuccess }: { onSuccess: (id: string) => void }) 
 export function NewApplicationDialog({
 	open,
 	onOpenChange,
+	resumes,
 }: {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	resumes: MasterResumeSummary[];
 }) {
 	const router = useRouter();
 	const [formKey, setFormKey] = useState(0);
@@ -206,7 +248,7 @@ export function NewApplicationDialog({
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-				{open && <NewApplicationForm key={formKey} onSuccess={handleSuccess} />}
+				{open && <NewApplicationForm key={formKey} resumes={resumes} onSuccess={handleSuccess} />}
 			</DialogContent>
 		</Dialog>
 	);

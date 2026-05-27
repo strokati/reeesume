@@ -1,6 +1,6 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { ATS_CHECK_SYSTEM, buildAtsCheckPrompt, resumeContentToText } from '@/lib/ai/prompts/ats-check';
+import { buildAtsCheckSystem, buildAtsCheckPrompt, resumeContentToText } from '@/lib/ai/prompts/ats-check';
 import { db } from '@/lib/db/client';
 
 export async function runAtsCheck(
@@ -12,7 +12,7 @@ export async function runAtsCheck(
 
 	const draft = await db.resumeDraft.findUnique({
 		where: { id: resumeDraftId },
-		include: { application: { include: { vacancy: true } } },
+		include: { application: { include: { vacancy: true, masterResume: { select: { language: true } } } } },
 	});
 
 	if (!draft || !draft.application.vacancy) {
@@ -23,6 +23,7 @@ export async function runAtsCheck(
 		throw new Error('No job posting text available for ATS check.');
 	}
 
+	const language = draft.application.masterResume?.language ?? 'en';
 	const resumeText = resumeContentToText(draft.content);
 	const vacancyText = draft.application.vacancy.rawText;
 
@@ -30,7 +31,7 @@ export async function runAtsCheck(
 
 	const result = streamText({
 		model,
-		system: ATS_CHECK_SYSTEM,
+		system: buildAtsCheckSystem(language),
 		prompt: buildAtsCheckPrompt(resumeText, vacancyText),
 		onFinish: async (event) => {
 			const durationMs = Date.now() - startTime;

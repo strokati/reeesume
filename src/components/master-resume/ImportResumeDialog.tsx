@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useTransition } from 'react';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, XCircle } from 'lucide-react';
 import {
 	Dialog,
 	DialogContent,
@@ -188,11 +188,13 @@ export function ImportResumeDialog({
 							<div key={p.name} className="flex items-center gap-2 text-sm">
 								{p.done ? (
 									<CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+								) : processingDone ? (
+									<XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
 								) : (
-									<Loader2 className={`h-4 w-4 shrink-0 ${!processingDone ? 'animate-spin' : ''}`} />
+									<Loader2 className="h-4 w-4 shrink-0 animate-spin" />
 								)}
 								<span className={p.done ? '' : 'text-muted-foreground'}>
-									{p.done ? `${p.name} ✓` : `Extracting ${p.name.toLowerCase()}...`}
+									{p.done ? `${p.name} ✓` : processingDone ? `${p.name} — not found` : `Extracting ${p.name.toLowerCase()}...`}
 								</span>
 							</div>
 						))}

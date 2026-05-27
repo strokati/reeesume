@@ -1,4 +1,6 @@
-export const ATS_CHECK_SYSTEM = `You are an expert ATS (Applicant Tracking System) analyst. Analyze a resume against a job posting and return a detailed compatibility check.
+import { languageLabel } from '@/lib/utils/language';
+
+const ATS_CHECK_BASE = `You are an expert ATS (Applicant Tracking System) analyst. Analyze a resume against a job posting and return a detailed compatibility check.
 
 You MUST respond with ONLY valid JSON matching this exact schema (no markdown, no explanation):
 
@@ -33,6 +35,22 @@ Rules:
 - keywordCoverage.found should list important job posting keywords that ARE present in the resume.
 - keywordCoverage.missing should list important keywords that are NOT present.
 - Generate at least 3-8 recommendations.`;
+
+export function buildAtsCheckSystem(language: string): string {
+	return `${ATS_CHECK_BASE}
+
+Target market: ${languageLabel(language)}.
+Apply ATS scoring for ${languageLabel(language)}-speaking markets.
+For German ("de"):
+- Flag missing German-specific sections: Persönliche Daten, Ausbildung format, Zertifikate
+- Check for DACH-common keywords relevant to the role
+- Note: German CVs typically include date of birth, photo, nationality — flag if absent when relevant
+- Reference German ATS tools: Softgarden, Personio, d.vinci
+For English ("en") or international:
+- Standard ATS keyword density, action verbs, quantified achievements
+- Reference international ATS tools: Workday, Greenhouse, Lever
+Score and recommend in English but reference market-specific expectations where relevant.`;
+}
 
 export interface AtsCheckResult {
 	overallScore: number;
