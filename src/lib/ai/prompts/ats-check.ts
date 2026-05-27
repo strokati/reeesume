@@ -37,7 +37,7 @@ Rules:
 - Generate at least 3-8 recommendations.`;
 
 export function buildAtsCheckSystem(language: string): string {
-	return `${ATS_CHECK_BASE}
+  return `${ATS_CHECK_BASE}
 
 Target market: ${languageLabel(language)}.
 Apply ATS scoring for ${languageLabel(language)}-speaking markets.
@@ -53,28 +53,28 @@ Score and recommend in English but reference market-specific expectations where 
 }
 
 export interface AtsCheckResult {
-	overallScore: number;
-	subScores: {
-		keywordMatch: number;
-		formatting: number;
-		sectionCompleteness: number;
-		readability: number;
-	};
-	keywordCoverage: {
-		found: string[];
-		missing: string[];
-	};
-	recommendations: {
-		priority: 'HIGH' | 'MED' | 'LOW';
-		category: string;
-		issue: string;
-		fix: string;
-	}[];
-	summary: string;
+  overallScore: number;
+  subScores: {
+    keywordMatch: number;
+    formatting: number;
+    sectionCompleteness: number;
+    readability: number;
+  };
+  keywordCoverage: {
+    found: string[];
+    missing: string[];
+  };
+  recommendations: {
+    priority: 'HIGH' | 'MED' | 'LOW';
+    category: string;
+    issue: string;
+    fix: string;
+  }[];
+  summary: string;
 }
 
 export function buildAtsCheckPrompt(resumeText: string, vacancyText: string): string {
-	return `## Resume Content
+  return `## Resume Content
 
 ${resumeText}
 
@@ -86,69 +86,78 @@ Analyze this resume against the job posting for ATS compatibility. Score keyword
 }
 
 export function resumeContentToText(content: unknown): string {
-	if (!content) return '(empty resume)';
-	if (typeof content === 'string') return content;
+  if (!content) return '(empty resume)';
+  if (typeof content === 'string') return content;
 
-	const data = content as Record<string, unknown>;
-	const parts: string[] = [];
+  const data = content as Record<string, unknown>;
+  const parts: string[] = [];
 
-	if (data.contactInfo) {
-		const c = data.contactInfo as Record<string, unknown>;
-		parts.push(`Contact: ${[c.name, c.email, c.phone, c.location].filter(Boolean).join(' | ')}`);
-	}
-	if (data.targetTitle) parts.push(`Target Title: ${data.targetTitle}`);
-	if (data.summary) parts.push(`Professional Summary: ${data.summary}`);
+  if (data.contactInfo) {
+    const c = data.contactInfo as Record<string, unknown>;
+    parts.push(`Contact: ${[c.name, c.email, c.phone, c.location].filter(Boolean).join(' | ')}`);
+  }
+  if (data.targetTitle) parts.push(`Target Title: ${data.targetTitle}`);
+  if (data.summary) parts.push(`Professional Summary: ${data.summary}`);
 
-	if (Array.isArray(data.workExperience)) {
-		for (const w of data.workExperience) {
-			const entry = w as Record<string, unknown>;
-			parts.push(`\nWork: ${entry.company ?? ''} — ${entry.title ?? ''}`);
-			if (entry.startDate || entry.endDate) parts.push(`  Period: ${entry.startDate ?? ''} - ${entry.endDate ?? 'present'}`);
-			if (Array.isArray(entry.bullets)) {
-				for (const b of entry.bullets) parts.push(`  • ${b}`);
-			}
-		}
-	}
+  if (Array.isArray(data.workExperience)) {
+    for (const w of data.workExperience) {
+      const entry = w as Record<string, unknown>;
+      parts.push(`\nWork: ${entry.company ?? ''} — ${entry.title ?? ''}`);
+      if (entry.startDate || entry.endDate)
+        parts.push(`  Period: ${entry.startDate ?? ''} - ${entry.endDate ?? 'present'}`);
+      if (Array.isArray(entry.bullets)) {
+        for (const b of entry.bullets) parts.push(`  • ${b}`);
+      }
+    }
+  }
 
-	if (Array.isArray(data.education)) {
-		parts.push('\nEducation:');
-		for (const e of data.education) {
-			const entry = e as Record<string, unknown>;
-			parts.push(`  ${entry.degree ?? ''} ${entry.field ?? ''} — ${entry.institution ?? ''}`);
-		}
-	}
+  if (Array.isArray(data.education)) {
+    parts.push('\nEducation:');
+    for (const e of data.education) {
+      const entry = e as Record<string, unknown>;
+      parts.push(`  ${entry.degree ?? ''} ${entry.field ?? ''} — ${entry.institution ?? ''}`);
+    }
+  }
 
-	if (Array.isArray(data.skills)) {
-		parts.push(`\nSkills: ${data.skills.map((s: Record<string, unknown>) => s.name ?? s).join(', ')}`);
-	}
+  if (Array.isArray(data.skills)) {
+    parts.push(
+      `\nSkills: ${data.skills.map((s: Record<string, unknown>) => s.name ?? s).join(', ')}`
+    );
+  }
 
-	if (Array.isArray(data.certifications)) {
-		parts.push(`\nCertifications: ${data.certifications.map((c: Record<string, unknown>) => c.name ?? c).join(', ')}`);
-	}
+  if (Array.isArray(data.certifications)) {
+    parts.push(
+      `\nCertifications: ${data.certifications.map((c: Record<string, unknown>) => c.name ?? c).join(', ')}`
+    );
+  }
 
-	if (Array.isArray(data.projects)) {
-		parts.push('\nProjects:');
-		for (const p of data.projects) {
-			const entry = p as Record<string, unknown>;
-			parts.push(`  ${entry.name ?? ''}${entry.description ? `: ${entry.description}` : ''}`);
-		}
-	}
+  if (Array.isArray(data.projects)) {
+    parts.push('\nProjects:');
+    for (const p of data.projects) {
+      const entry = p as Record<string, unknown>;
+      parts.push(`  ${entry.name ?? ''}${entry.description ? `: ${entry.description}` : ''}`);
+    }
+  }
 
-	if (Array.isArray(data.awards)) {
-		parts.push(`\nAwards: ${data.awards.map((a: Record<string, unknown>) => a.title ?? a).join(', ')}`);
-	}
+  if (Array.isArray(data.awards)) {
+    parts.push(
+      `\nAwards: ${data.awards.map((a: Record<string, unknown>) => a.title ?? a).join(', ')}`
+    );
+  }
 
-	if (Array.isArray(data.volunteering)) {
-		parts.push('\nVolunteering:');
-		for (const v of data.volunteering) {
-			const entry = v as Record<string, unknown>;
-			parts.push(`  ${entry.role ?? ''} at ${entry.organization ?? ''}`);
-		}
-	}
+  if (Array.isArray(data.volunteering)) {
+    parts.push('\nVolunteering:');
+    for (const v of data.volunteering) {
+      const entry = v as Record<string, unknown>;
+      parts.push(`  ${entry.role ?? ''} at ${entry.organization ?? ''}`);
+    }
+  }
 
-	if (Array.isArray(data.publications)) {
-		parts.push(`\nPublications: ${data.publications.map((p: Record<string, unknown>) => p.title ?? p).join(', ')}`);
-	}
+  if (Array.isArray(data.publications)) {
+    parts.push(
+      `\nPublications: ${data.publications.map((p: Record<string, unknown>) => p.title ?? p).join(', ')}`
+    );
+  }
 
-	return parts.join('\n') || '(empty resume)';
+  return parts.join('\n') || '(empty resume)';
 }

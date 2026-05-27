@@ -46,7 +46,7 @@ Rules:
 - If the vacancy analysis is available, use its keywords and requirements to guide suggestions.`;
 
 export function buildResumeSuggestionsSystem(language: string): string {
-	return `${RESUME_SUGGESTIONS_BASE}
+  return `${RESUME_SUGGESTIONS_BASE}
 
 Output language: ${languageLabel(language)}.
 Write all suggested bullets and the summary rewrite in ${languageLabel(language)}.
@@ -54,63 +54,83 @@ Apply ${languageLabel(language)}-market resume conventions.`;
 }
 
 export interface ResumeSuggestions {
-	summary: {
-		suggestion: string;
-		reasoning: string;
-	};
-	workExperience: {
-		companyId: string;
-		roleId: string;
-		include: boolean;
-		relevanceScore: number;
-		reasoning: string;
-		suggestedBullets: string[];
-	}[];
-	skills: {
-		skillId: string;
-		include: boolean;
-		reasoning: string;
-	}[];
-	projects: {
-		projectId: string;
-		include: boolean;
-		relevanceScore: number;
-		reasoning: string;
-	}[];
-	sectionOrder: string[];
+  summary: {
+    suggestion: string;
+    reasoning: string;
+  };
+  workExperience: {
+    companyId: string;
+    roleId: string;
+    include: boolean;
+    relevanceScore: number;
+    reasoning: string;
+    suggestedBullets: string[];
+  }[];
+  skills: {
+    skillId: string;
+    include: boolean;
+    reasoning: string;
+  }[];
+  projects: {
+    projectId: string;
+    include: boolean;
+    relevanceScore: number;
+    reasoning: string;
+  }[];
+  sectionOrder: string[];
 }
 
 export function buildResumeSuggestionsPrompt(params: {
-	vacancyText: string;
-	vacancyAnalysis: unknown;
-	masterResumeSummary: string;
-	workItems: { companyId: string; companyName: string; roleId: string; roleTitle: string; responsibilities?: string[]; achievements?: string[] }[];
-	skillItems: { skillId: string; name: string; category?: string | null }[];
-	projectItems: { projectId: string; name: string; description?: string | null; technologies?: string[] | null }[];
+  vacancyText: string;
+  vacancyAnalysis: unknown;
+  masterResumeSummary: string;
+  workItems: {
+    companyId: string;
+    companyName: string;
+    roleId: string;
+    roleTitle: string;
+    responsibilities?: string[];
+    achievements?: string[];
+  }[];
+  skillItems: { skillId: string; name: string; category?: string | null }[];
+  projectItems: {
+    projectId: string;
+    name: string;
+    description?: string | null;
+    technologies?: string[] | null;
+  }[];
 }): string {
-	const workSection = params.workItems.length
-		? `## Work Experience (with IDs)\n${params.workItems.map((w) =>
-				`- Company: "${w.companyName}" (companyId: "${w.companyId}") | Role: "${w.roleTitle}" (roleId: "${w.roleId}")${w.responsibilities?.length ? `\n  Responsibilities: ${w.responsibilities.join('; ')}` : ''}${w.achievements?.length ? `\n  Achievements: ${w.achievements.join('; ')}` : ''}`,
-			).join('\n')}`
-		: '## Work Experience\nNo work experience entries.';
+  const workSection = params.workItems.length
+    ? `## Work Experience (with IDs)\n${params.workItems
+        .map(
+          (w) =>
+            `- Company: "${w.companyName}" (companyId: "${w.companyId}") | Role: "${w.roleTitle}" (roleId: "${w.roleId}")${w.responsibilities?.length ? `\n  Responsibilities: ${w.responsibilities.join('; ')}` : ''}${w.achievements?.length ? `\n  Achievements: ${w.achievements.join('; ')}` : ''}`
+        )
+        .join('\n')}`
+    : '## Work Experience\nNo work experience entries.';
 
-	const skillsSection = params.skillItems.length
-		? `## Skills (with IDs)\n${params.skillItems.map((s) =>
-				`- "${s.name}" (skillId: "${s.skillId}")${s.category ? ` [${s.category}]` : ''}`,
-			).join('\n')}`
-		: '## Skills\nNo skills listed.';
+  const skillsSection = params.skillItems.length
+    ? `## Skills (with IDs)\n${params.skillItems
+        .map(
+          (s) => `- "${s.name}" (skillId: "${s.skillId}")${s.category ? ` [${s.category}]` : ''}`
+        )
+        .join('\n')}`
+    : '## Skills\nNo skills listed.';
 
-	const projectsSection = params.projectItems.length
-		? `## Projects (with IDs)\n${params.projectItems.map((p) =>
-				`- "${p.name}" (projectId: "${p.projectId}")${p.description ? `: ${p.description}` : ''}${p.technologies?.length ? ` [${p.technologies.join(', ')}]` : ''}`,
-			).join('\n')}`
-		: '## Projects\nNo projects listed.';
+  const projectsSection = params.projectItems.length
+    ? `## Projects (with IDs)\n${params.projectItems
+        .map(
+          (p) =>
+            `- "${p.name}" (projectId: "${p.projectId}")${p.description ? `: ${p.description}` : ''}${p.technologies?.length ? ` [${p.technologies.join(', ')}]` : ''}`
+        )
+        .join('\n')}`
+    : '## Projects\nNo projects listed.';
 
-	const analysisSection = params.vacancyAnalysis
-		? `## Vacancy AI Analysis\n${JSON.stringify(params.vacancyAnalysis, null, 2)}`
-		: '';
+  const analysisSection = params.vacancyAnalysis
+    ? `## Vacancy AI Analysis\n${JSON.stringify(params.vacancyAnalysis, null, 2)}`
+    : '';
 
-	return `## Job Posting
+  return `## Job Posting
 
 ${params.vacancyText}
 

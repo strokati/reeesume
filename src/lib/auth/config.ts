@@ -9,76 +9,74 @@ import { generateOtp } from './otp';
 const authMode = process.env.AUTH_MODE ?? 'none';
 
 const emailOtpConfig = {
-	adapter: PrismaAdapter(db),
-	providers: [
-		Nodemailer({
-			server: {
-				host: process.env.SMTP_HOST,
-				port: Number(process.env.SMTP_PORT ?? '587'),
-				auth: {
-					user: process.env.SMTP_USER,
-					pass: process.env.SMTP_PASS,
-				},
-			},
-			from: process.env.EMAIL_FROM ?? 'noreply@example.com',
-			sendVerificationRequest: async ({ identifier: email }: { identifier: string }) => {
-				const user = await db.user.findUnique({ where: { email } });
-				if (!user) return;
+  adapter: PrismaAdapter(db),
+  providers: [
+    Nodemailer({
+      server: {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT ?? '587'),
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      },
+      from: process.env.EMAIL_FROM ?? 'noreply@example.com',
+      sendVerificationRequest: async ({ identifier: email }: { identifier: string }) => {
+        const user = await db.user.findUnique({ where: { email } });
+        if (!user) return;
 
-				const code = generateOtp();
-				const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+        const code = generateOtp();
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
 
-				await db.otpCode.create({
-					data: {
-						userId: user.id,
-						hashedCode,
-						expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-					},
-				});
+        await db.otpCode.create({
+          data: {
+            userId: user.id,
+            hashedCode,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+          },
+        });
 
-				const transporter = nodemailer.createTransport({
-					host: process.env.SMTP_HOST,
-					port: Number(process.env.SMTP_PORT ?? '587'),
-					auth: {
-						user: process.env.SMTP_USER,
-						pass: process.env.SMTP_PASS,
-					},
-				});
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT ?? '587'),
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
 
-				await transporter.sendMail({
-					from: process.env.EMAIL_FROM ?? 'noreply@example.com',
-					to: email,
-					subject: 'Your verification code',
-					text: `Your verification code is: ${code}. It expires in 10 minutes.`,
-				});
-			},
-		}),
-	],
-	session: {
-		strategy: 'database' as const,
-		maxAge: Number(process.env.SESSION_DURATION_DAYS ?? 30) * 86400,
-	},
-	callbacks: {
-		async signIn({ user }: { user: { email?: string | null } }) {
-			if (user.email && user.email !== process.env.ALLOWED_EMAIL) {
-				return false;
-			}
-			return true;
-		},
-	},
+        await transporter.sendMail({
+          from: process.env.EMAIL_FROM ?? 'noreply@example.com',
+          to: email,
+          subject: 'Your verification code',
+          text: `Your verification code is: ${code}. It expires in 10 minutes.`,
+        });
+      },
+    }),
+  ],
+  session: {
+    strategy: 'database' as const,
+    maxAge: Number(process.env.SESSION_DURATION_DAYS ?? 30) * 86400,
+  },
+  callbacks: {
+    async signIn({ user }: { user: { email?: string | null } }) {
+      if (user.email && user.email !== process.env.ALLOWED_EMAIL) {
+        return false;
+      }
+      return true;
+    },
+  },
 };
 
 export const authConfig = authMode === 'email_otp' ? emailOtpConfig : {};
 
 const nextAuthResult = authMode === 'email_otp' ? NextAuth(emailOtpConfig) : null;
 
-export const auth = nextAuthResult
-	? nextAuthResult.auth
-	: async () => null;
+export const auth = nextAuthResult ? nextAuthResult.auth : async () => null;
 
 export const handlers = nextAuthResult
-	? nextAuthResult.handlers
-	: {
-			GET: async () => new Response('Auth disabled', { status: 404 }),
-			POST: async () => new Response('Auth disabled', { status: 404 }),
-		};
+  ? nextAuthResult.handlers
+  : {
+      GET: async () => new Response('Auth disabled', { status: 404 }),
+      POST: async () => new Response('Auth disabled', { status: 404 }),
+    };

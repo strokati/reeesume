@@ -10,41 +10,41 @@ import type { ApplicationWithVacancy } from '@/types/applications';
 import type { MasterResumeSummary } from '@/types/master-resume';
 
 export function ApplicationsView({
-	initialData,
-	resumes,
+  initialData,
+  resumes,
 }: {
-	initialData: ApplicationWithVacancy[];
-	resumes: MasterResumeSummary[];
+  initialData: ApplicationWithVacancy[];
+  resumes: MasterResumeSummary[];
 }) {
-	const { data: applications } = useQuery({
-		queryKey: ['applications'],
-		queryFn: () => initialData,
-		initialData,
-		staleTime: Infinity,
-	});
+  const { data: applications } = useQuery({
+    queryKey: ['applications'],
+    queryFn: () => initialData,
+    initialData,
+    staleTime: Infinity,
+  });
 
-	return (
-		<div className="space-y-6">
-			<PageHeader
-				title="Applications"
-				description="Track your job applications from saved to offer."
-				action={<NewApplicationButton resumes={resumes} />}
-			/>
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Applications"
+        description="Track your job applications from saved to offer."
+        action={<NewApplicationButton resumes={resumes} />}
+      />
 
-			{applications.length === 0 ? (
-				<EmptyState
-					icon={<Briefcase className="h-8 w-8" />}
-					title="No applications yet"
-					description="Start by adding your first job application. You can paste a job posting for AI analysis."
-					action={<NewApplicationButton resumes={resumes} />}
-				/>
-			) : (
-				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-					{applications.map((app) => (
-						<ApplicationCard key={app.id} application={app} />
-					))}
-				</div>
-			)}
-		</div>
-	);
+      {applications.length === 0 ? (
+        <EmptyState
+          icon={<Briefcase className="h-8 w-8" />}
+          title="No applications yet"
+          description="Start by adding your first job application. You can paste a job posting for AI analysis."
+          action={<NewApplicationButton resumes={resumes} />}
+        />
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {applications.map((app) => (
+            <ApplicationCard key={app.id} application={app} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

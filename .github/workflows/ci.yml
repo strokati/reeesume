@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ dev, main ]
+    branches: [dev, main]
   pull_request:
-    branches: [ dev, main ]
+    branches: [dev, main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -17,35 +17,35 @@ jobs:
     timeout-minutes: 15
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: npm
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Security audit
-      run: npm audit --audit-level=high
+      - name: Security audit
+        run: npm audit --audit-level=high
 
-    - name: Generate Prisma client
-      run: npx prisma generate
+      - name: Generate Prisma client
+        run: npx prisma generate
 
-    - name: Type check
-      run: npm run type-check
+      - name: Type check
+        run: npm run type-check
 
-    - name: Lint
-      run: npm run lint
+      - name: Lint
+        run: npm run lint
 
-    - name: Build
-      run: npm run build
-      env:
-        # Fake values — build verifies compilation only, no DB connection in CI
-        DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-        NEXTAUTH_SECRET: ci-placeholder-secret-not-used-in-production
-        NEXTAUTH_URL: http://localhost:3000
-        AUTH_MODE: none
+      - name: Build
+        run: npm run build
+        env:
+          # Fake values — build verifies compilation only, no DB connection in CI
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          NEXTAUTH_SECRET: ci-placeholder-secret-not-used-in-production
+          NEXTAUTH_URL: http://localhost:3000
+          AUTH_MODE: none

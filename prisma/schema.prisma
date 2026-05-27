@@ -44,12 +44,12 @@ model Session {
 }
 
 model OtpCode {
-  id           String   @id @default(cuid())
-  userId       String
-  hashedCode   String
-  expiresAt    DateTime
-  usedAt       DateTime?
-  createdAt    DateTime @default(now())
+  id         String    @id @default(cuid())
+  userId     String
+  hashedCode String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -61,22 +61,22 @@ model OtpCode {
 // =============================================================================
 
 model MasterResume {
-  id                String   @id @default(cuid())
-  userId            String
-  name              String   @default("Default")
-  language          String   @default("en")   // BCP-47 tag: "en", "de", "fr", "es", etc.
-  isDefault         Boolean  @default(false)
+  id        String  @id @default(cuid())
+  userId    String
+  name      String  @default("Default")
+  language  String  @default("en") // BCP-47 tag: "en", "de", "fr", "es", etc.
+  isDefault Boolean @default(false)
 
   // Flat JSON fields for single-entry sections
-  contactInfo       Json?    // { name, email, phone, location, linkedin, github, website, ... }
-  targetTitle       String?
+  contactInfo         Json? // { name, email, phone, location, linkedin, github, website, ... }
+  targetTitle         String?
   professionalSummary String?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   workCompanies     WorkCompany[]
   educations        Education[]
   skills            Skill[]
@@ -98,9 +98,9 @@ model WorkCompany {
   resumeId       String
   name           String
   location       String?
-  employmentType String?  // "Full-time" | "Part-time" | "Contract" | "Freelance"
-  startDate      String?  // stored as string for flexible input (e.g. "Jan 2020")
-  endDate        String?  // null = current
+  employmentType String? // "Full-time" | "Part-time" | "Contract" | "Freelance"
+  startDate      String? // stored as string for flexible input (e.g. "Jan 2020")
+  endDate        String? // null = current
   order          Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -116,10 +116,10 @@ model WorkRole {
   companyId        String
   title            String
   startDate        String?
-  endDate          String?  // null = current
-  responsibilities Json?    // String[]
-  achievements     Json?    // String[]
-  technologies     Json?    // String[]
+  endDate          String? // null = current
+  responsibilities Json? // String[]
+  achievements     Json? // String[]
+  technologies     Json? // String[]
   order            Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -138,7 +138,7 @@ model WorkProject {
   endDate      String?
   description  String?
   contribution String?
-  technologies Json?    // String[]
+  technologies Json? // String[]
   outcome      String?
   order        Int      @default(0)
   createdAt    DateTime @default(now())
@@ -152,20 +152,20 @@ model WorkProject {
 // Education
 
 model Education {
-  id           String   @id @default(cuid())
-  resumeId     String
-  institution  String
-  degree       String?
-  field        String?
-  location     String?
-  startDate    String?
-  endDate      String?
-  gpa          String?
-  honors       String?
-  activities   Json?    // String[]
-  order        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  resumeId    String
+  institution String
+  degree      String?
+  field       String?
+  location    String?
+  startDate   String?
+  endDate     String?
+  gpa         String?
+  honors      String?
+  activities  Json? // String[]
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
@@ -178,8 +178,8 @@ model Skill {
   id        String   @id @default(cuid())
   resumeId  String
   name      String
-  category  String?  // e.g. "Programming Languages", "Tools", "Languages", "Interests"
-  level     String?  // "Beginner" | "Intermediate" | "Expert"
+  category  String? // e.g. "Programming Languages", "Tools", "Languages", "Interests"
+  level     String? // "Beginner" | "Intermediate" | "Expert"
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -237,7 +237,7 @@ model Project {
   role         String?
   startDate    String?
   endDate      String?
-  technologies Json?    // String[]
+  technologies Json? // String[]
   url          String?
   repoUrl      String?
   order        Int      @default(0)
@@ -252,17 +252,17 @@ model Project {
 // Volunteering & Leadership
 
 model VolunteeringRole {
-  id              String   @id @default(cuid())
-  resumeId        String
-  organization    String
-  role            String?
-  location        String?
-  startDate       String?
-  endDate         String?
-  responsibilities Json?   // String[]
-  order           Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(cuid())
+  resumeId         String
+  organization     String
+  role             String?
+  location         String?
+  startDate        String?
+  endDate          String?
+  responsibilities Json? // String[]
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   resume MasterResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
@@ -295,20 +295,20 @@ model Publication {
 // =============================================================================
 
 model Vacancy {
-  id          String   @id @default(cuid())
-  userId      String
-  companyName String
-  jobTitle    String
-  location    String?
+  id           String   @id @default(cuid())
+  userId       String
+  companyName  String
+  jobTitle     String
+  location     String?
   locationType String? // "On-site" | "Hybrid" | "Remote"
-  salaryMin   Int?
-  salaryMax   Int?
-  currency    String?  @default("USD")
-  sourceUrl   String?
-  rawText     String?  // original job posting text
-  aiAnalysis  Json?    // structured output from analyze-vacancy operation
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  salaryMin    Int?
+  salaryMax    Int?
+  currency     String?  @default("USD")
+  sourceUrl    String?
+  rawText      String? // original job posting text
+  aiAnalysis   Json? // structured output from analyze-vacancy operation
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   application Application?
@@ -317,25 +317,25 @@ model Vacancy {
 }
 
 model Application {
-  id            String    @id @default(cuid())
-  vacancyId     String    @unique
-  masterResumeId String?  // null = use user's default master resume
-  status        String    @default("saved") // saved|planned|applied|screening|interview|offer|rejected|on_hold
-  salaryMin     Int?
-  salaryMax     Int?
-  dateSaved     DateTime  @default(now())
-  deadline      DateTime?
-  dateApplied   DateTime?
-  followUpDate  DateTime?
-  excitement    Int?      // 1–5
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  vacancyId      String    @unique
+  masterResumeId String? // null = use user's default master resume
+  status         String    @default("saved") // saved|planned|applied|screening|interview|offer|rejected|on_hold
+  salaryMin      Int?
+  salaryMax      Int?
+  dateSaved      DateTime  @default(now())
+  deadline       DateTime?
+  dateApplied    DateTime?
+  followUpDate   DateTime?
+  excitement     Int? // 1–5
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  vacancy          Vacancy             @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
-  masterResume     MasterResume?       @relation(fields: [masterResumeId], references: [id], onDelete: SetNull)
-  resumeDrafts     ResumeDraft[]
+  vacancy           Vacancy            @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  masterResume      MasterResume?      @relation(fields: [masterResumeId], references: [id], onDelete: SetNull)
+  resumeDrafts      ResumeDraft[]
   coverLetterDrafts CoverLetterDraft[]
-  notes            ApplicationNote[]
+  notes             ApplicationNote[]
 
   @@map("applications")
 }
@@ -344,11 +344,11 @@ model ResumeDraft {
   id            String   @id @default(cuid())
   applicationId String
   name          String   @default("Draft 1")
-  content       Json?    // structured resume sections (mirrors master resume shape but scoped)
+  content       Json? // structured resume sections (mirrors master resume shape but scoped)
   status        String   @default("draft") // draft|ready|exported
-  isActive      Boolean  @default(false)   // only one active draft per application
+  isActive      Boolean  @default(false) // only one active draft per application
   templateId    String   @default("ats-simple")
-  atsScore      Json?    // { score, subScores, recommendations } from ats-check operation
+  atsScore      Json? // { score, subScores, recommendations } from ats-check operation
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -358,16 +358,16 @@ model ResumeDraft {
 }
 
 model CoverLetterDraft {
-  id             String   @id @default(cuid())
-  applicationId  String
-  name           String   @default("Draft 1")
-  content        String?  // rich text (HTML from Tiptap)
-  tone           String   @default("professional") // professional|confident|warm
-  status         String   @default("draft")        // draft|ready|exported
-  isActive       Boolean  @default(false)
-  hiringManager  String?  // "Dear [name]" salutation
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(cuid())
+  applicationId String
+  name          String   @default("Draft 1")
+  content       String? // rich text (HTML from Tiptap)
+  tone          String   @default("professional") // professional|confident|warm
+  status        String   @default("draft") // draft|ready|exported
+  isActive      Boolean  @default(false)
+  hiringManager String? // "Dear [name]" salutation
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
@@ -393,12 +393,12 @@ model ApplicationNote {
 model AiProviderConfig {
   id          String   @id @default(cuid())
   userId      String
-  providerId  String   // openai|anthropic|google|mistral|groq|xai|cohere|zai|ollama|custom
-  apiKey      String?  // encrypted at rest (application-level encryption)
-  model       String   // e.g. "gpt-4o", "claude-3-5-sonnet-20241022"
+  providerId  String // openai|anthropic|google|mistral|groq|xai|cohere|zai|ollama|custom
+  apiKey      String? // encrypted at rest (application-level encryption)
+  model       String // e.g. "gpt-4o", "claude-3-5-sonnet-20241022"
   isDefault   Boolean  @default(false)
-  baseUrl     String?  // for ollama or custom providers
-  displayName String?  // for custom providers
+  baseUrl     String? // for ollama or custom providers
+  displayName String? // for custom providers
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -411,10 +411,10 @@ model AiProviderConfig {
 model AiCallLog {
   id            String   @id @default(cuid())
   userId        String
-  operation     String   // analyze-vacancy|resume-suggestions|ats-check|cover-letter|rephrase|import-resume
+  operation     String // analyze-vacancy|resume-suggestions|ats-check|cover-letter|rephrase|import-resume
   providerId    String
   model         String
-  applicationId String?  // null for import-resume and other non-application ops
+  applicationId String? // null for import-resume and other non-application ops
   tokensIn      Int?
   tokensOut     Int?
   durationMs    Int?

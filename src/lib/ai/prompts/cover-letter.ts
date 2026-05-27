@@ -3,9 +3,9 @@ import { languageLabel } from '@/lib/utils/language';
 export type CoverLetterTone = 'professional' | 'confident' | 'warm';
 
 const TONE_INSTRUCTIONS: Record<CoverLetterTone, string> = {
-	professional: `Write in a formal, achievement-focused tone. Minimize personal flair. Use precise language and concrete results. Address the hiring manager respectfully.`,
-	confident: `Write with strong, direct statements. Minimize softening language ("I believe", "I feel"). Lead with impact and outcomes. Show conviction in your value.`,
-	warm: `Write with a storytelling approach. Build personal connection through narrative. Express genuine enthusiasm. Balance professionalism with personality.`,
+  professional: `Write in a formal, achievement-focused tone. Minimize personal flair. Use precise language and concrete results. Address the hiring manager respectfully.`,
+  confident: `Write with strong, direct statements. Minimize softening language ("I believe", "I feel"). Lead with impact and outcomes. Show conviction in your value.`,
+  warm: `Write with a storytelling approach. Build personal connection through narrative. Express genuine enthusiasm. Balance professionalism with personality.`,
 };
 
 const COVER_LETTER_BASE = `You are an expert cover letter writer. Generate a cover letter based on the candidate's resume and the job posting.
@@ -28,7 +28,7 @@ Rules:
 - Include a professional closing.`;
 
 export function buildCoverLetterSystem(language: string): string {
-	return `${COVER_LETTER_BASE}
+  return `${COVER_LETTER_BASE}
 
 Write the cover letter in ${languageLabel(language)}.
 Apply ${languageLabel(language)}-market professional conventions for cover letters.
@@ -42,14 +42,14 @@ For English ("en"):
 }
 
 export function buildCoverLetterPrompt(params: {
-	tone: CoverLetterTone;
-	resumeText: string;
-	vacancyText: string;
-	contactName: string;
-	companyName: string;
-	jobTitle: string;
+  tone: CoverLetterTone;
+  resumeText: string;
+  vacancyText: string;
+  contactName: string;
+  companyName: string;
+  jobTitle: string;
 }): string {
-	return `Tone: ${params.tone}
+  return `Tone: ${params.tone}
 ${TONE_INSTRUCTIONS[params.tone]}
 
 Candidate Name: ${params.contactName}

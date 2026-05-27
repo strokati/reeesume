@@ -3,89 +3,89 @@
 # Test: pre-commit run --all-files
 
 repos:
-    # General file checks (built-in)
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v6.0.0
-      hooks:
-          - id: trailing-whitespace
-            name: Trim trailing whitespace
-            exclude: ^(\.next/|dist/|build/)
-          - id: end-of-file-fixer
-            name: Fix end of file
-            exclude: ^(\.next/|dist/|build/)
-          - id: check-yaml
-            name: Check YAML syntax
-            args: ['--unsafe']
-          - id: check-json
-            name: Check JSON syntax
-          - id: check-merge-conflict
-            name: Check for merge conflicts
-          - id: detect-private-key
-            name: Detect private keys
-          - id: check-ast
-            name: Check Python AST
-          - id: mixed-line-ending
-            name: Fix mixed line endings
-            args: ['--fix=lf']
+  # General file checks (built-in)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        exclude: ^(\.next/|dist/|build/)
+      - id: end-of-file-fixer
+        name: Fix end of file
+        exclude: ^(\.next/|dist/|build/)
+      - id: check-yaml
+        name: Check YAML syntax
+        args: ['--unsafe']
+      - id: check-json
+        name: Check JSON syntax
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      - id: detect-private-key
+        name: Detect private keys
+      - id: check-ast
+        name: Check Python AST
+      - id: mixed-line-ending
+        name: Fix mixed line endings
+        args: ['--fix=lf']
 
-    # Prettier, ESLint, and TypeScript — use local project installs to avoid mirror tag issues
-    - repo: local
-      hooks:
-          - id: prettier
-            name: Prettier formatting
-            entry: npx prettier --write
-            language: system
-            files: \.(js|jsx|ts|tsx|json|yaml|yml|md|mdx)$
-            exclude: ^(\.next/|dist/|build/|\.vscode/)
-          - id: eslint
-            name: ESLint
-            entry: npx eslint --fix --max-warnings=0
-            language: system
-            files: \.(js|jsx|ts|tsx)$
-            exclude: ^(\.next/|dist/|build/)
-          - id: tsc
-            name: TypeScript type check
-            entry: npx tsc --noEmit --skipLibCheck
-            language: system
-            files: \.(ts|tsx)$
-            exclude: ^(\.next/|dist/|build/)
-            pass_filenames: false
+  # Prettier, ESLint, and TypeScript — use local project installs to avoid mirror tag issues
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier formatting
+        entry: npx prettier --write
+        language: system
+        files: \.(js|jsx|ts|tsx|json|yaml|yml|md|mdx)$
+        exclude: ^(\.next/|dist/|build/|\.vscode/)
+      - id: eslint
+        name: ESLint
+        entry: npx eslint --fix --max-warnings=0
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        exclude: ^(\.next/|dist/|build/)
+      - id: tsc
+        name: TypeScript type check
+        entry: npx tsc --noEmit --skipLibCheck
+        language: system
+        files: \.(ts|tsx)$
+        exclude: ^(\.next/|dist/|build/)
+        pass_filenames: false
 
-    # Prisma schema validation
-    - repo: local
-      hooks:
-          - id: prisma-format
-            name: Prisma schema format
-            entry: bash -c 'npx prisma format'
-            language: system
-            files: ^prisma/schema\.prisma$
-            pass_filenames: false
-            stages: [pre-commit]
+  # Prisma schema validation
+  - repo: local
+    hooks:
+      - id: prisma-format
+        name: Prisma schema format
+        entry: bash -c 'npx prisma format'
+        language: system
+        files: ^prisma/schema\.prisma$
+        pass_filenames: false
+        stages: [pre-commit]
 
-    # Commitlint - validate commit messages (runs on commit-msg)
-    - repo: local
-      hooks:
-          - id: commitlint
-            name: Commitlint
-            entry: npx commitlint --edit
-            language: system
-            stages: [commit-msg]
+  # Commitlint - validate commit messages (runs on commit-msg)
+  - repo: local
+    hooks:
+      - id: commitlint
+        name: Commitlint
+        entry: npx commitlint --edit
+        language: system
+        stages: [commit-msg]
 
 # Global settings
 default_language_version:
-    node: system
-    python: python3
+  node: system
+  python: python3
 
 exclude: |
-    (?x)^(
-      \.next/|
-      dist/|
-      build/|
-      node_modules/|
-      \.vscode/|
-      coverage/|
-      \.env|
-      \.env\..*|
-      yarn\.lock|
-      package-lock\.json
-    )
+  (?x)^(
+    \.next/|
+    dist/|
+    build/|
+    node_modules/|
+    \.vscode/|
+    coverage/|
+    \.env|
+    \.env\..*|
+    yarn\.lock|
+    package-lock\.json
+  )

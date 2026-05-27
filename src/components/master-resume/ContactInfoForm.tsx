@@ -10,50 +10,50 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const fields: { name: keyof ContactInfoInput; label: string; type?: string }[] = [
-	{ name: 'name', label: 'Full Name' },
-	{ name: 'email', label: 'Email', type: 'email' },
-	{ name: 'phone', label: 'Phone', type: 'tel' },
-	{ name: 'location', label: 'Location (City, Country)' },
-	{ name: 'linkedin', label: 'LinkedIn URL', type: 'url' },
-	{ name: 'github', label: 'GitHub URL', type: 'url' },
-	{ name: 'website', label: 'Personal Website', type: 'url' },
+  { name: 'name', label: 'Full Name' },
+  { name: 'email', label: 'Email', type: 'email' },
+  { name: 'phone', label: 'Phone', type: 'tel' },
+  { name: 'location', label: 'Location (City, Country)' },
+  { name: 'linkedin', label: 'LinkedIn URL', type: 'url' },
+  { name: 'github', label: 'GitHub URL', type: 'url' },
+  { name: 'website', label: 'Personal Website', type: 'url' },
 ];
 
 export function ContactInfoForm({
-	resumeId,
-	defaultValues,
+  resumeId,
+  defaultValues,
 }: {
-	resumeId: string;
-	defaultValues?: ContactInfoInput;
+  resumeId: string;
+  defaultValues?: ContactInfoInput;
 }) {
-	const [, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
-	const form = useForm<ContactInfoInput>({
-		resolver: zodResolver(ContactInfoSchema),
-		defaultValues: defaultValues ?? { name: '', email: '', phone: '', location: '' },
-	});
+  const form = useForm<ContactInfoInput>({
+    resolver: zodResolver(ContactInfoSchema),
+    defaultValues: defaultValues ?? { name: '', email: '', phone: '', location: '' },
+  });
 
-	function onSubmit(data: ContactInfoInput) {
-		startTransition(async () => {
-			try {
-				await updateContactInfo(resumeId, data);
-				toast.success('Contact info saved');
-			} catch {
-				toast.error('Failed to save contact info');
-			}
-		});
-	}
+  function onSubmit(data: ContactInfoInput) {
+    startTransition(async () => {
+      try {
+        await updateContactInfo(resumeId, data);
+        toast.success('Contact info saved');
+      } catch {
+        toast.error('Failed to save contact info');
+      }
+    });
+  }
 
-	return (
-		<form id="contact-info-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-			<div className="grid gap-4 sm:grid-cols-2">
-				{fields.map(({ name, label, type }) => (
-					<div key={name} className="space-y-1.5">
-						<Label htmlFor={name}>{label}</Label>
-						<Input id={name} type={type ?? 'text'} {...form.register(name)} />
-					</div>
-				))}
-			</div>
-		</form>
-	);
+  return (
+    <form id="contact-info-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {fields.map(({ name, label, type }) => (
+          <div key={name} className="space-y-1.5">
+            <Label htmlFor={name}>{label}</Label>
+            <Input id={name} type={type ?? 'text'} {...form.register(name)} />
+          </div>
+        ))}
+      </div>
+    </form>
+  );
 }

@@ -381,12 +381,12 @@ import { streamText } from 'ai';
 import { getProvider } from '@/lib/ai/providers';
 
 export async function analyzeVacancy(vacancyText: string, providerId: string, model: string) {
-    const aiModel = await getProvider(providerId, model); // reads API key from DB
-    return streamText({
-        model: aiModel,
-        system: SYSTEM_PROMPT,
-        prompt: vacancyText,
-    });
+  const aiModel = await getProvider(providerId, model); // reads API key from DB
+  return streamText({
+    model: aiModel,
+    system: SYSTEM_PROMPT,
+    prompt: vacancyText,
+  });
 }
 ```
 

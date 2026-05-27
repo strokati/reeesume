@@ -56,16 +56,19 @@ import { db } from '@/lib/db/client';
 import type { Skill, Prisma } from '@prisma/client';
 
 export async function getSkillsByResumeId(resumeId: string): Promise<Skill[]> {
-	return db.skill.findMany({
-		where: { resumeId },
-		orderBy: { order: 'asc' },
-	});
+  return db.skill.findMany({
+    where: { resumeId },
+    orderBy: { order: 'asc' },
+  });
 }
 
-export async function createSkill(resumeId: string, data: Prisma.SkillCreateWithoutResumeInput): Promise<Skill> {
-	return db.skill.create({
-		data: { ...data, resumeId },
-	});
+export async function createSkill(
+  resumeId: string,
+  data: Prisma.SkillCreateWithoutResumeInput
+): Promise<Skill> {
+  return db.skill.create({
+    data: { ...data, resumeId },
+  });
 }
 ```
 
@@ -81,20 +84,23 @@ import { redirect } from 'next/navigation';
 import { db } from '@/lib/db/client';
 
 const CreateSkillSchema = z.object({
-	name: z.string().min(1),
-	category: z.string().optional(),
-	level: z.enum(['Beginner', 'Intermediate', 'Expert']).optional(),
+  name: z.string().min(1),
+  category: z.string().optional(),
+  level: z.enum(['Beginner', 'Intermediate', 'Expert']).optional(),
 });
 
-export async function createSkillAction(resumeId: string, formData: z.infer<typeof CreateSkillSchema>) {
-	const session = await auth();
-	if (!session && process.env.AUTH_MODE === 'email_otp') redirect('/login');
+export async function createSkillAction(
+  resumeId: string,
+  formData: z.infer<typeof CreateSkillSchema>
+) {
+  const session = await auth();
+  if (!session && process.env.AUTH_MODE === 'email_otp') redirect('/login');
 
-	const parsed = CreateSkillSchema.safeParse(formData);
-	if (!parsed.success) throw new Error('Invalid input');
+  const parsed = CreateSkillSchema.safeParse(formData);
+  if (!parsed.success) throw new Error('Invalid input');
 
-	await db.skill.create({ data: { ...parsed.data, resumeId } });
-	revalidatePath('/master-resume');
+  await db.skill.create({ data: { ...parsed.data, resumeId } });
+  revalidatePath('/master-resume');
 }
 ```
 

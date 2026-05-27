@@ -51,16 +51,16 @@ export function [ComponentName]({ className }: [ComponentName]Props) {
 ```tsx
 // For table-like components
 interface TrackerTableProps {
-	applications: ApplicationWithVacancy[]; // use Prisma-generated types + your joins
-	onStatusChange: (id: string, status: ApplicationStatus) => void;
-	className?: string;
+  applications: ApplicationWithVacancy[]; // use Prisma-generated types + your joins
+  onStatusChange: (id: string, status: ApplicationStatus) => void;
+  className?: string;
 }
 
 // For form components
 interface SkillFormProps {
-	initial?: Partial<Skill>; // undefined = create mode, defined = edit mode
-	resumeId: string;
-	onSuccess?: () => void;
+  initial?: Partial<Skill>; // undefined = create mode, defined = edit mode
+  resumeId: string;
+  onSuccess?: () => void;
 }
 ```
 

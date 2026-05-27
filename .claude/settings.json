@@ -1,44 +1,44 @@
 {
-	"includeCoAuthoredBy": false,
-	"gitAttribution": false,
-	"permissions": {
-		"allow": [
-			"Npm run *",
-			"Npm install *",
-			"Npm install",
-			"Npx prisma generate",
-			"Npx prisma migrate dev*",
-			"Npx prisma studio",
-			"Npx prisma db seed",
-			"Npx prisma db push",
-			"Npx shadcn*",
-			"Npx create-next-app*",
-			"Docker compose up*",
-			"Docker compose down*",
-			"Docker compose logs*",
-			"Docker compose build*",
-			"Docker compose -f*",
-			"Git add *",
-			"Git commit *",
-			"Git status",
-			"Git diff *",
-			"Git log *",
-			"Git branch *",
-			"Git checkout *",
-			"Git stash *",
-			"Mkdir -p *",
-			"Cp *",
-			"Mv *"
-		],
-		"deny": [
-			"Git push *",
-			"Git push",
-			"Git reset --hard *",
-			"Git reset --hard",
-			"Rm -rf *",
-			"Npx prisma migrate reset",
-			"DROP TABLE*",
-			"DROP DATABASE*"
-		]
-	}
+  "includeCoAuthoredBy": false,
+  "gitAttribution": false,
+  "permissions": {
+    "allow": [
+      "Npm run *",
+      "Npm install *",
+      "Npm install",
+      "Npx prisma generate",
+      "Npx prisma migrate dev*",
+      "Npx prisma studio",
+      "Npx prisma db seed",
+      "Npx prisma db push",
+      "Npx shadcn*",
+      "Npx create-next-app*",
+      "Docker compose up*",
+      "Docker compose down*",
+      "Docker compose logs*",
+      "Docker compose build*",
+      "Docker compose -f*",
+      "Git add *",
+      "Git commit *",
+      "Git status",
+      "Git diff *",
+      "Git log *",
+      "Git branch *",
+      "Git checkout *",
+      "Git stash *",
+      "Mkdir -p *",
+      "Cp *",
+      "Mv *"
+    ],
+    "deny": [
+      "Git push *",
+      "Git push",
+      "Git reset --hard *",
+      "Git reset --hard",
+      "Rm -rf *",
+      "Npx prisma migrate reset",
+      "DROP TABLE*",
+      "DROP DATABASE*"
+    ]
+  }
 }
