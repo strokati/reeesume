@@ -1,5 +1,28 @@
 import { z } from 'zod';
 
+function omitUndefined<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, entry]) => entry !== undefined)
+  ) as T;
+}
+
+const absentToUndefined = (value: unknown) => {
+  if (value === null) return undefined;
+  if (typeof value === 'string' && value.trim() === '') return undefined;
+  return value;
+};
+
+const optionalString = z.preprocess(absentToUndefined, z.string().optional());
+const optionalStringArray = z.preprocess(absentToUndefined, z.array(z.string()).optional());
+const optionalEmploymentType = z.preprocess(
+  absentToUndefined,
+  z.enum(['Full-time', 'Part-time', 'Contract', 'Freelance']).optional()
+);
+const optionalSkillLevel = z.preprocess(
+  absentToUndefined,
+  z.enum(['Beginner', 'Intermediate', 'Expert']).optional()
+);
+
 export const IMPORT_RESUME_SYSTEM = `You are an expert resume parser that handles resumes in ANY language (German, English, French, Spanish, etc.).
 
 Your task: extract ALL information from the resume and output a single valid JSON object matching this exact structure:
@@ -124,46 +147,47 @@ Rules:
 - Output ONLY the JSON object, no prose, no markdown fences.`;
 
 export const ImportedResumeSchema = z.object({
-  detectedLanguage: z.string().optional(),
+  detectedLanguage: optionalString,
   contactInfo: z
     .object({
-      name: z.string().optional(),
-      email: z.string().optional(),
-      phone: z.string().optional(),
-      location: z.string().optional(),
-      linkedin: z.string().optional(),
-      github: z.string().optional(),
-      website: z.string().optional(),
+      name: optionalString,
+      email: optionalString,
+      phone: optionalString,
+      location: optionalString,
+      linkedin: optionalString,
+      github: optionalString,
+      website: optionalString,
     })
+    .transform(omitUndefined)
     .optional(),
-  targetTitle: z.string().optional(),
-  professionalSummary: z.string().optional(),
+  targetTitle: optionalString,
+  professionalSummary: optionalString,
   workCompanies: z
     .array(
       z.object({
         name: z.string(),
-        location: z.string().optional(),
-        employmentType: z.enum(['Full-time', 'Part-time', 'Contract', 'Freelance']).optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
+        location: optionalString,
+        employmentType: optionalEmploymentType,
+        startDate: optionalString,
+        endDate: optionalString,
         roles: z.array(
           z.object({
             title: z.string(),
-            startDate: z.string().optional(),
-            endDate: z.string().optional(),
-            responsibilities: z.array(z.string()).optional(),
-            achievements: z.array(z.string()).optional(),
-            technologies: z.array(z.string()).optional(),
+            startDate: optionalString,
+            endDate: optionalString,
+            responsibilities: optionalStringArray,
+            achievements: optionalStringArray,
+            technologies: optionalStringArray,
             projects: z
               .array(
                 z.object({
                   name: z.string(),
-                  startDate: z.string().optional(),
-                  endDate: z.string().optional(),
-                  description: z.string().optional(),
-                  contribution: z.string().optional(),
-                  technologies: z.array(z.string()).optional(),
-                  outcome: z.string().optional(),
+                  startDate: optionalString,
+                  endDate: optionalString,
+                  description: optionalString,
+                  contribution: optionalString,
+                  technologies: optionalStringArray,
+                  outcome: optionalString,
                 })
               )
               .optional(),
@@ -176,14 +200,14 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         institution: z.string(),
-        degree: z.string().optional(),
-        field: z.string().optional(),
-        location: z.string().optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        gpa: z.string().optional(),
-        honors: z.string().optional(),
-        activities: z.array(z.string()).optional(),
+        degree: optionalString,
+        field: optionalString,
+        location: optionalString,
+        startDate: optionalString,
+        endDate: optionalString,
+        gpa: optionalString,
+        honors: optionalString,
+        activities: optionalStringArray,
       })
     )
     .optional(),
@@ -191,8 +215,8 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        category: z.string().optional(),
-        level: z.enum(['Beginner', 'Intermediate', 'Expert']).optional(),
+        category: optionalString,
+        level: optionalSkillLevel,
       })
     )
     .optional(),
@@ -200,11 +224,11 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        issuer: z.string().optional(),
-        issueDate: z.string().optional(),
-        expiryDate: z.string().optional(),
-        credentialId: z.string().optional(),
-        url: z.string().optional(),
+        issuer: optionalString,
+        issueDate: optionalString,
+        expiryDate: optionalString,
+        credentialId: optionalString,
+        url: optionalString,
       })
     )
     .optional(),
@@ -212,9 +236,9 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         title: z.string(),
-        issuer: z.string().optional(),
-        date: z.string().optional(),
-        description: z.string().optional(),
+        issuer: optionalString,
+        date: optionalString,
+        description: optionalString,
       })
     )
     .optional(),
@@ -222,13 +246,13 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        description: z.string().optional(),
-        role: z.string().optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        technologies: z.array(z.string()).optional(),
-        url: z.string().optional(),
-        repoUrl: z.string().optional(),
+        description: optionalString,
+        role: optionalString,
+        startDate: optionalString,
+        endDate: optionalString,
+        technologies: optionalStringArray,
+        url: optionalString,
+        repoUrl: optionalString,
       })
     )
     .optional(),
@@ -236,11 +260,11 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         organization: z.string(),
-        role: z.string().optional(),
-        location: z.string().optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        responsibilities: z.array(z.string()).optional(),
+        role: optionalString,
+        location: optionalString,
+        startDate: optionalString,
+        endDate: optionalString,
+        responsibilities: optionalStringArray,
       })
     )
     .optional(),
@@ -248,12 +272,12 @@ export const ImportedResumeSchema = z.object({
     .array(
       z.object({
         title: z.string(),
-        authors: z.string().optional(),
-        publisher: z.string().optional(),
-        date: z.string().optional(),
-        url: z.string().optional(),
-        doi: z.string().optional(),
-        description: z.string().optional(),
+        authors: optionalString,
+        publisher: optionalString,
+        date: optionalString,
+        url: optionalString,
+        doi: optionalString,
+        description: optionalString,
       })
     )
     .optional(),

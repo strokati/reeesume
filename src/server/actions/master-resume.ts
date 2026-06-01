@@ -56,7 +56,7 @@ import type {
   UpdatePublicationInput,
   CreateMasterResumeInput,
 } from '@/lib/validations/master-resume';
-import type { ImportedResumeData } from '@/lib/ai/prompts/import-resume';
+import { ImportedResumeSchema, type ImportedResumeData } from '@/lib/ai/prompts/import-resume';
 
 async function requireAuth(): Promise<string> {
   const session = await auth();
@@ -731,6 +731,7 @@ export async function applyImportedResume(
   mode: 'overwrite' | 'merge'
 ): Promise<void> {
   const userId = await requireAuth();
+  const importedData = ImportedResumeSchema.parse(data);
 
   const resume = await db.masterResume.findUnique({ where: { id: resumeId } });
   if (!resume || resume.userId !== userId) {
@@ -750,8 +751,8 @@ export async function applyImportedResume(
     }
 
     const flatUpdates: Record<string, unknown> = {};
-    if (data.contactInfo) {
-      const ci = { ...data.contactInfo } as Record<string, unknown>;
+    if (importedData.contactInfo) {
+      const ci = { ...importedData.contactInfo } as Record<string, unknown>;
       for (const [key, val] of Object.entries(ci)) {
         if (typeof val !== 'string') continue;
         const lower = val.toLowerCase();
@@ -766,16 +767,17 @@ export async function applyImportedResume(
       }
       flatUpdates.contactInfo = ContactInfoSchema.parse(ci);
     }
-    if (data.targetTitle) flatUpdates.targetTitle = data.targetTitle;
-    if (data.professionalSummary) flatUpdates.professionalSummary = data.professionalSummary;
+    if (importedData.targetTitle) flatUpdates.targetTitle = importedData.targetTitle;
+    if (importedData.professionalSummary)
+      flatUpdates.professionalSummary = importedData.professionalSummary;
     if (Object.keys(flatUpdates).length > 0) {
       await tx.masterResume.update({ where: { id: resumeId }, data: flatUpdates });
     }
 
-    if (data.workCompanies?.length) {
+    if (importedData.workCompanies?.length) {
       const existingCount = await tx.workCompany.count({ where: { resumeId } });
-      for (let ci = 0; ci < data.workCompanies.length; ci++) {
-        const c = data.workCompanies[ci];
+      for (let ci = 0; ci < importedData.workCompanies.length; ci++) {
+        const c = importedData.workCompanies[ci];
         const company = await tx.workCompany.create({
           data: {
             resumeId,
@@ -822,10 +824,10 @@ export async function applyImportedResume(
       }
     }
 
-    if (data.educations?.length) {
+    if (importedData.educations?.length) {
       const count = await tx.education.count({ where: { resumeId } });
       await tx.education.createMany({
-        data: data.educations.map((e, i) => ({
+        data: importedData.educations.map((e, i) => ({
           resumeId,
           institution: e.institution,
           degree: e.degree,
@@ -841,10 +843,10 @@ export async function applyImportedResume(
       });
     }
 
-    if (data.skills?.length) {
+    if (importedData.skills?.length) {
       const count = await tx.skill.count({ where: { resumeId } });
       await tx.skill.createMany({
-        data: data.skills.map((s, i) => ({
+        data: importedData.skills.map((s, i) => ({
           resumeId,
           name: s.name,
           category: s.category,
@@ -854,10 +856,10 @@ export async function applyImportedResume(
       });
     }
 
-    if (data.certifications?.length) {
+    if (importedData.certifications?.length) {
       const count = await tx.certification.count({ where: { resumeId } });
       await tx.certification.createMany({
-        data: data.certifications.map((c, i) => ({
+        data: importedData.certifications.map((c, i) => ({
           resumeId,
           name: c.name,
           issuer: c.issuer,
@@ -870,10 +872,10 @@ export async function applyImportedResume(
       });
     }
 
-    if (data.awards?.length) {
+    if (importedData.awards?.length) {
       const count = await tx.award.count({ where: { resumeId } });
       await tx.award.createMany({
-        data: data.awards.map((a, i) => ({
+        data: importedData.awards.map((a, i) => ({
           resumeId,
           title: a.title,
           issuer: a.issuer,
@@ -884,10 +886,10 @@ export async function applyImportedResume(
       });
     }
 
-    if (data.projects?.length) {
+    if (importedData.projects?.length) {
       const count = await tx.project.count({ where: { resumeId } });
       await tx.project.createMany({
-        data: data.projects.map((p, i) => ({
+        data: importedData.projects.map((p, i) => ({
           resumeId,
           name: p.name,
           description: p.description,
@@ -902,10 +904,10 @@ export async function applyImportedResume(
       });
     }
 
-    if (data.volunteeringRoles?.length) {
+    if (importedData.volunteeringRoles?.length) {
       const count = await tx.volunteeringRole.count({ where: { resumeId } });
       await tx.volunteeringRole.createMany({
-        data: data.volunteeringRoles.map((v, i) => ({
+        data: importedData.volunteeringRoles.map((v, i) => ({
           resumeId,
           organization: v.organization,
           role: v.role,
@@ -918,10 +920,10 @@ export async function applyImportedResume(
       });
     }
 
-    if (data.publications?.length) {
+    if (importedData.publications?.length) {
       const count = await tx.publication.count({ where: { resumeId } });
       await tx.publication.createMany({
-        data: data.publications.map((p, i) => ({
+        data: importedData.publications.map((p, i) => ({
           resumeId,
           title: p.title,
           authors: p.authors,
