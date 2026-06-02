@@ -10,22 +10,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { updateResumeDraftTemplate } from '@/server/actions/resume-drafts';
+import { TEMPLATES } from '@/lib/templates';
 import { toast } from 'sonner';
 
-const TEMPLATES = [
-  { id: 'ats-simple', name: 'ATS Simple', description: 'Single-column, max ATS compatibility' },
-  {
-    id: 'professional-classic',
-    name: 'Professional Classic',
-    description: 'Two-column, subtle formatting',
-  },
-  { id: 'modern-minimal', name: 'Modern Minimal', description: 'Contemporary with accent color' },
-  {
-    id: 'international-de',
-    name: 'International / German',
-    description: 'DE/AT/CH conventions, photo slot',
-  },
-];
+const TEMPLATE_LIST = Object.values(TEMPLATES).map((t) => ({
+  id: t.id,
+  name: t.name,
+  description: t.description,
+}));
 
 export function TemplatePicker({
   draftId,
@@ -48,7 +40,7 @@ export function TemplatePicker({
     });
   }
 
-  const current = TEMPLATES.find((t) => t.id === currentTemplateId);
+  const current = TEMPLATE_LIST.find((t) => t.id === currentTemplateId);
 
   return (
     <DropdownMenu>
@@ -57,7 +49,7 @@ export function TemplatePicker({
         {current?.name ?? 'Template'}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        {TEMPLATES.map((t) => (
+        {TEMPLATE_LIST.map((t) => (
           <DropdownMenuItem
             key={t.id}
             onClick={() => handleSelect(t.id)}
