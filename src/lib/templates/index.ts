@@ -2,6 +2,7 @@ import { AtsSimpleTemplate } from './ats-simple/AtsSimpleTemplate';
 import { ProfessionalClassicTemplate } from './professional-classic/ProfessionalClassicTemplate';
 import { ModernMinimalTemplate } from './modern-minimal/ModernMinimalTemplate';
 import { InternationalDeTemplate } from './international-de/InternationalDeTemplate';
+import { BlueProfessionalTemplate } from './blue-professional/BlueProfessionalTemplate';
 import type { TemplateId, TemplateDefinition } from './types';
 
 export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
@@ -28,6 +29,13 @@ export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
     name: 'International / German-style',
     description: 'Includes photo slot, follows DE/AT/CH conventions.',
     component: InternationalDeTemplate,
+  },
+  'blue-professional': {
+    id: 'blue-professional',
+    name: 'Blue Professional',
+    description:
+      'Clean single-column with blue accents, project sub-entries, and inline stack lines.',
+    component: BlueProfessionalTemplate,
   },
 };
 

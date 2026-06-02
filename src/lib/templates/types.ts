@@ -2,7 +2,8 @@ export type TemplateId =
   | 'ats-simple'
   | 'professional-classic'
   | 'modern-minimal'
-  | 'international-de';
+  | 'international-de'
+  | 'blue-professional';
 
 export interface ContactInfo {
   name?: string;
@@ -18,14 +19,25 @@ export interface ContactInfo {
   photoUrl?: string;
 }
 
+export interface WorkProjectItem {
+  name: string;
+  startDate?: string;
+  endDate?: string;
+  description?: string;
+  responsibilities?: string[];
+  technologies?: string[];
+}
+
 export interface WorkExperienceItem {
   companyName: string;
   title: string;
   startDate?: string;
   endDate?: string;
+  workArrangement?: string;
   responsibilities: string[];
   achievements: string[];
   technologies?: string[];
+  projects?: WorkProjectItem[];
 }
 
 export interface EducationItem {

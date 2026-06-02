@@ -31,7 +31,7 @@ export function TemplatesView({
 
   async function handleUseTemplate(templateId: string) {
     if (!activeDraftId) {
-      toast.error('No active resume draft found');
+      toast.error('Open a resume draft first, then select a template here.');
       return;
     }
     try {
@@ -89,7 +89,7 @@ export function TemplatesView({
                   </div>
                   <p className="text-sm text-muted-foreground mt-0.5">{template.description}</p>
                 </div>
-                {!isActive && activeDraftId && (
+                {!isActive && (
                   <Button
                     variant="outline"
                     size="sm"
