@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -9,6 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { createWorkRole, updateWorkRole } from '@/server/actions/master-resume';
 import { CreateWorkRoleSchema, type CreateWorkRoleInput } from '@/lib/validations/master-resume';
 import type { WorkCompanyWithRoles } from '@/types/master-resume';
@@ -95,6 +103,7 @@ function WorkRoleDialogForm({
   role?: WorkRole | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isEdit = !!role;
 
@@ -108,6 +117,9 @@ function WorkRoleDialogForm({
     (role?.technologies as string[] | null) ?? []
   );
   const [tagInput, setTagInput] = useState('');
+  const [workArrangement, setWorkArrangement] = useState<string>(
+    (role?.workArrangement as string | null) ?? ''
+  );
 
   const form = useForm<{ title: string; startDate?: string; endDate?: string }>({
     resolver: zodResolver(
@@ -131,6 +143,9 @@ function WorkRoleDialogForm({
   function onSubmit(data: { title: string; startDate?: string; endDate?: string }) {
     const payload: CreateWorkRoleInput = {
       ...data,
+      workArrangement: workArrangement
+        ? (workArrangement as CreateWorkRoleInput['workArrangement'])
+        : undefined,
       responsibilities: responsibilities.filter((s) => s.trim()),
       achievements: achievements.filter((s) => s.trim()),
       technologies,
@@ -145,6 +160,7 @@ function WorkRoleDialogForm({
           toast.success('Role added');
         }
         onOpenChange(false);
+        router.refresh();
       } catch {
         toast.error('Failed to save role');
       }
@@ -170,8 +186,22 @@ function WorkRoleDialogForm({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="role-end">End Date</Label>
-          <Input id="role-end" {...register('endDate')} placeholder="Dec 2022" />
+          <Input id="role-end" {...register('endDate')} placeholder="Present" />
         </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>Work Arrangements</Label>
+        <Select value={workArrangement} onValueChange={(v) => setWorkArrangement(v ?? '')}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select arrangement" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="On-Site">On-Site</SelectItem>
+            <SelectItem value="Hybrid">Hybrid</SelectItem>
+            <SelectItem value="Remote">Remote</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <StringListEditor

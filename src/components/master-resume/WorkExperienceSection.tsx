@@ -13,7 +13,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { toast } from 'sonner';
 import { SectionCard } from './SectionCard';
 import { WorkCompanyCard } from './WorkCompanyCard';
-import { WorkCompanyDialog } from './WorkCompanyDialog';
+import { WorkRoleWithCompanyDialog } from './WorkRoleWithCompanyDialog';
 import { reorderWorkCompanies } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -61,7 +61,7 @@ export function WorkExperienceSection({
       collapsible
       action={
         <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Add Company
+          <Plus className="h-4 w-4 mr-1" /> Add Role
         </Button>
       }
     >
@@ -87,7 +87,7 @@ export function WorkExperienceSection({
         </DndContext>
       )}
 
-      <WorkCompanyDialog open={addOpen} onOpenChange={setAddOpen} resumeId={resumeId} />
+      <WorkRoleWithCompanyDialog open={addOpen} onOpenChange={setAddOpen} resumeId={resumeId} />
     </SectionCard>
   );
 }

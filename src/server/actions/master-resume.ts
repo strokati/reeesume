@@ -246,6 +246,57 @@ export async function reorderWorkCompanies(resumeId: string, orderedIds: string[
 // Work Roles
 // =============================================================================
 
+export async function createWorkRoleWithCompany(
+  resumeId: string,
+  data: {
+    companyName: string;
+    companyLocation?: string;
+    employmentType?: string;
+    roleTitle: string;
+    startDate?: string;
+    endDate?: string;
+    workArrangement?: 'On-Site' | 'Hybrid' | 'Remote';
+  }
+): Promise<void> {
+  await requireAuth();
+  const schema = z.object({
+    companyName: z.string().min(1, 'Company name is required'),
+    companyLocation: z.string().optional(),
+    employmentType: z.enum(['Full-time', 'Part-time', 'Contract', 'Freelance']).optional(),
+    roleTitle: z.string().min(1, 'Role title is required'),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    workArrangement: z.enum(['On-Site', 'Hybrid', 'Remote']).optional(),
+  });
+  const validated = schema.parse(data);
+  try {
+    const companyCount = await db.workCompany.count({ where: { resumeId } });
+    const company = await db.workCompany.create({
+      data: {
+        resumeId,
+        name: validated.companyName,
+        location: validated.companyLocation,
+        employmentType: validated.employmentType,
+        order: companyCount,
+      },
+    });
+    await db.workRole.create({
+      data: {
+        companyId: company.id,
+        title: validated.roleTitle,
+        startDate: validated.startDate,
+        endDate: validated.endDate,
+        workArrangement: validated.workArrangement,
+        order: 0,
+      },
+    });
+  } catch {
+    throw new Error('Failed to create role.');
+  } finally {
+    revalidatePath('/master-resume');
+  }
+}
+
 export async function createWorkRole(
   companyId: string,
   data: CreateWorkRoleInput
@@ -798,6 +849,7 @@ export async function applyImportedResume(
                 title: r.title,
                 startDate: r.startDate,
                 endDate: r.endDate,
+                workArrangement: r.workArrangement ?? undefined,
                 responsibilities: r.responsibilities ?? undefined,
                 achievements: r.achievements ?? undefined,
                 technologies: r.technologies ?? undefined,
@@ -813,6 +865,7 @@ export async function applyImportedResume(
                   endDate: p.endDate,
                   description: p.description,
                   contribution: p.contribution,
+                  responsibilities: p.responsibilities ?? undefined,
                   technologies: p.technologies ?? undefined,
                   outcome: p.outcome,
                   order: pi,

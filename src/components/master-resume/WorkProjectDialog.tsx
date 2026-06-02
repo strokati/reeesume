@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -16,9 +17,79 @@ import {
   type CreateWorkProjectInput,
 } from '@/lib/validations/master-resume';
 import type { WorkCompanyWithRoles } from '@/types/master-resume';
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 
 type WorkProject = WorkCompanyWithRoles['roles'][number]['projects'][number];
+
+function StringListEditor({
+  label,
+  items,
+  onChange,
+}: {
+  label: string;
+  items: string[];
+  onChange: (items: string[]) => void;
+}) {
+  const [newItem, setNewItem] = useState('');
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <ul className="space-y-1">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-center gap-1">
+            <Input
+              value={item}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = e.target.value;
+                onChange(next);
+              }}
+              className="text-sm"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onChange(items.filter((_, j) => j !== i))}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <div className="flex gap-1">
+        <Input
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (newItem.trim()) {
+                onChange([...items, newItem.trim()]);
+                setNewItem('');
+              }
+            }
+          }}
+          placeholder="Add item and press Enter..."
+          className="text-sm"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => {
+            if (newItem.trim()) {
+              onChange([...items, newItem.trim()]);
+              setNewItem('');
+            }
+          }}
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function WorkProjectDialogForm({
   roleId,
@@ -29,9 +100,13 @@ function WorkProjectDialogForm({
   project?: WorkProject | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isEdit = !!project;
 
+  const [responsibilities, setResponsibilities] = useState<string[]>(
+    (project?.responsibilities as string[] | null) ?? []
+  );
   const [technologies, setTechnologies] = useState<string[]>(
     (project?.technologies as string[] | null) ?? []
   );
@@ -50,7 +125,11 @@ function WorkProjectDialogForm({
   });
 
   function onSubmit(data: Omit<CreateWorkProjectInput, 'technologies'>) {
-    const payload: CreateWorkProjectInput = { ...data, technologies };
+    const payload: CreateWorkProjectInput = {
+      ...data,
+      responsibilities: responsibilities.filter((s) => s.trim()),
+      technologies,
+    };
     startTransition(async () => {
       try {
         if (isEdit) {
@@ -61,6 +140,7 @@ function WorkProjectDialogForm({
           toast.success('Project added');
         }
         onOpenChange(false);
+        router.refresh();
       } catch {
         toast.error('Failed to save project');
       }
@@ -94,6 +174,12 @@ function WorkProjectDialogForm({
         <Label htmlFor="proj-desc">Description</Label>
         <Textarea id="proj-desc" {...register('description')} rows={3} />
       </div>
+
+      <StringListEditor
+        label="Responsibilities"
+        items={responsibilities}
+        onChange={setResponsibilities}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="proj-contrib">Contribution</Label>
