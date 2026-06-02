@@ -22,15 +22,17 @@ export function ToneSelector({
     <div className="flex items-center gap-1">
       {OPTIONS.map((opt) => (
         <Tooltip key={opt.value}>
-          <TooltipTrigger>
-            <Button
-              variant={value === opt.value ? 'default' : 'outline'}
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() => onChange(opt.value)}
-            >
-              {opt.label}
-            </Button>
+          <TooltipTrigger
+            render={
+              <Button
+                variant={value === opt.value ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => onChange(opt.value)}
+              />
+            }
+          >
+            {opt.label}
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
             {opt.description}
