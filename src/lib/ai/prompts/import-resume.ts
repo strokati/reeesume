@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
 function omitUndefined<T extends Record<string, unknown>>(value: T): T {
-  return Object.fromEntries(
-    Object.entries(value).filter(([, entry]) => entry !== undefined)
-  ) as T;
+  return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as T;
 }
 
 const absentToUndefined = (value: unknown) => {
@@ -21,6 +19,10 @@ const optionalEmploymentType = z.preprocess(
 const optionalSkillLevel = z.preprocess(
   absentToUndefined,
   z.enum(['Beginner', 'Intermediate', 'Expert']).optional()
+);
+const optionalWorkArrangementType = z.preprocess(
+  absentToUndefined,
+  z.enum(['On-Site', 'Hybrid', 'Remote']).optional()
 );
 
 export const IMPORT_RESUME_SYSTEM = `You are an expert resume parser that handles resumes in ANY language (German, English, French, Spanish, etc.).
@@ -52,9 +54,22 @@ Your task: extract ALL information from the resume and output a single valid JSO
           "title": "string — job title (Stellenbezeichnung, Position, etc.)",
           "startDate": "string",
           "endDate": "string",
+          "workArrangement": "On-Site | Hybrid | Remote — infer from context (remote/hybrid/vor Ort/etc.) or omit if unclear",
           "responsibilities": ["string"],
           "achievements": ["string"],
-          "technologies": ["string"]
+          "technologies": ["string"],
+          "projects": [
+            {
+              "name": "string — client or project name",
+              "startDate": "string",
+              "endDate": "string",
+              "description": "string",
+              "contribution": "string",
+              "responsibilities": ["string"],
+              "technologies": ["string"],
+              "outcome": "string"
+            }
+          ]
         }
       ]
     }
@@ -140,6 +155,8 @@ Rules:
 - If the resume header contains URLs, classify them: linkedin.com → linkedin, github.com → github, everything else → website.
 - German section headings to recognize: Berufserfahrung/Berufliche Erfahrung = workCompanies; Ausbildung/Studium = educations; Kenntnisse/Fähigkeiten/Kompetenzen = skills; Zertifikate/Zertifizierungen = certifications; Auszeichnungen/Preise = awards; Projekte = projects; Ehrenamt/Engagement = volunteeringRoles; Publikationen/Veröffentlichungen = publications; Profil/Über mich/Zusammenfassung = professionalSummary.
 - Rewrite vague responsibilities as action-verb-led bullet points. Keep them in the original language.
+- For projects inside a role (client engagements, consulting projects): populate the projects[] array with description, responsibilities[], and technologies[].
+- workArrangement: set "Remote" if the text mentions remote/Heimarbeit/home office; "Hybrid" if hybrid is stated; "On-Site" if Vor-Ort/in-person is stated; omit if not mentioned.
 - Preserve the original language of the resume. Do NOT translate. Extract content as-is in the source language.
 - "detectedLanguage": 2-letter BCP-47 language code of the source document (e.g. "de", "en", "fr").
 - Dates: keep the original format (e.g. "Jan 2020", "2020-01", "seit 2020" → "2020–present").
@@ -165,27 +182,29 @@ export const ImportedResumeSchema = z.object({
   workCompanies: z
     .array(
       z.object({
-        name: z.string(),
+        name: optionalString,
         location: optionalString,
         employmentType: optionalEmploymentType,
         startDate: optionalString,
         endDate: optionalString,
         roles: z.array(
           z.object({
-            title: z.string(),
+            title: optionalString,
             startDate: optionalString,
             endDate: optionalString,
+            workArrangement: optionalWorkArrangementType,
             responsibilities: optionalStringArray,
             achievements: optionalStringArray,
             technologies: optionalStringArray,
             projects: z
               .array(
                 z.object({
-                  name: z.string(),
+                  name: optionalString,
                   startDate: optionalString,
                   endDate: optionalString,
                   description: optionalString,
                   contribution: optionalString,
+                  responsibilities: optionalStringArray,
                   technologies: optionalStringArray,
                   outcome: optionalString,
                 })
@@ -199,7 +218,7 @@ export const ImportedResumeSchema = z.object({
   educations: z
     .array(
       z.object({
-        institution: z.string(),
+        institution: optionalString,
         degree: optionalString,
         field: optionalString,
         location: optionalString,
@@ -214,7 +233,7 @@ export const ImportedResumeSchema = z.object({
   skills: z
     .array(
       z.object({
-        name: z.string(),
+        name: optionalString,
         category: optionalString,
         level: optionalSkillLevel,
       })
@@ -223,7 +242,7 @@ export const ImportedResumeSchema = z.object({
   certifications: z
     .array(
       z.object({
-        name: z.string(),
+        name: optionalString,
         issuer: optionalString,
         issueDate: optionalString,
         expiryDate: optionalString,
@@ -235,7 +254,7 @@ export const ImportedResumeSchema = z.object({
   awards: z
     .array(
       z.object({
-        title: z.string(),
+        title: optionalString,
         issuer: optionalString,
         date: optionalString,
         description: optionalString,
@@ -245,7 +264,7 @@ export const ImportedResumeSchema = z.object({
   projects: z
     .array(
       z.object({
-        name: z.string(),
+        name: optionalString,
         description: optionalString,
         role: optionalString,
         startDate: optionalString,
@@ -259,7 +278,7 @@ export const ImportedResumeSchema = z.object({
   volunteeringRoles: z
     .array(
       z.object({
-        organization: z.string(),
+        organization: optionalString,
         role: optionalString,
         location: optionalString,
         startDate: optionalString,
@@ -271,7 +290,7 @@ export const ImportedResumeSchema = z.object({
   publications: z
     .array(
       z.object({
-        title: z.string(),
+        title: optionalString,
         authors: optionalString,
         publisher: optionalString,
         date: optionalString,
