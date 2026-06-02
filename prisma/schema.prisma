@@ -117,6 +117,7 @@ model WorkRole {
   title            String
   startDate        String?
   endDate          String? // null = current
+  workArrangement  String? // "On-Site" | "Hybrid" | "Remote"
   responsibilities Json? // String[]
   achievements     Json? // String[]
   technologies     Json? // String[]
@@ -131,18 +132,19 @@ model WorkRole {
 }
 
 model WorkProject {
-  id           String   @id @default(cuid())
-  roleId       String
-  name         String
-  startDate    String?
-  endDate      String?
-  description  String?
-  contribution String?
-  technologies Json? // String[]
-  outcome      String?
-  order        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(cuid())
+  roleId           String
+  name             String
+  startDate        String?
+  endDate          String?
+  description      String?
+  contribution     String?
+  responsibilities Json? // String[]
+  technologies     Json? // String[]
+  outcome          String?
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   role WorkRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 

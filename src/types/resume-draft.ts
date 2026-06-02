@@ -11,6 +11,7 @@ export interface DraftWorkProject {
   endDate?: string;
   description?: string;
   contribution?: string;
+  responsibilities?: DraftBullet[];
   technologies?: string[];
   outcome?: string;
   source: ContentSource;
@@ -22,6 +23,7 @@ export interface DraftWorkRole {
   companyName: string;
   startDate?: string;
   endDate?: string;
+  workArrangement?: string;
   responsibilities: DraftBullet[];
   achievements: DraftBullet[];
   technologies?: string[];
