@@ -52,6 +52,7 @@ export async function renderCoverLetterOnlyPdf(htmlContent: string): Promise<Buf
 <meta charset="utf-8" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { margin: 0; size: A4; }
   body { margin: 0; padding: 0.5in; font-family: Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.6; color: #1a1a1a; }
   p { margin-bottom: 8pt; }
 </style>

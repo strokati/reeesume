@@ -21,6 +21,8 @@ const STYLES = {
     padding: '0.5in',
     maxWidth: '8.5in',
     boxSizing: 'border-box' as const,
+    WebkitBoxDecorationBreak: 'clone' as const,
+    boxDecorationBreak: 'clone' as const,
   },
   name: {
     fontSize: '18pt',

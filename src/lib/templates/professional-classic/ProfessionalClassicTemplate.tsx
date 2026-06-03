@@ -34,6 +34,8 @@ export function ProfessionalClassicTemplate({ data }: TemplateProps) {
         color: '#222',
         display: 'flex',
         minHeight: '100%',
+        WebkitBoxDecorationBreak: 'clone' as const,
+        boxDecorationBreak: 'clone' as const,
       }}
     >
       {/* Left sidebar */}
