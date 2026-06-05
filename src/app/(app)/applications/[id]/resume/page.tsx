@@ -37,6 +37,7 @@ async function buildInitialContent(userId: string, masterResumeId: string | null
         companyName: c.name,
         startDate: r.startDate ?? undefined,
         endDate: r.endDate ?? undefined,
+        workArrangement: r.workArrangement ?? undefined,
         responsibilities: ((r.responsibilities as string[] | null) ?? []).map((t) => ({
           text: t,
           source: 'master' as const,
@@ -46,6 +47,20 @@ async function buildInitialContent(userId: string, masterResumeId: string | null
           source: 'master' as const,
         })),
         technologies: (r.technologies as string[] | null) ?? undefined,
+        projects: r.projects.map((p) => ({
+          name: p.name,
+          startDate: p.startDate ?? undefined,
+          endDate: p.endDate ?? undefined,
+          description: p.description ?? undefined,
+          contribution: p.contribution ?? undefined,
+          responsibilities: ((p.responsibilities as string[] | null) ?? []).map((t) => ({
+            text: t,
+            source: 'master' as const,
+          })),
+          technologies: (p.technologies as string[] | null) ?? undefined,
+          outcome: p.outcome ?? undefined,
+          source: 'master' as const,
+        })),
         source: 'master' as const,
       }))
     ),

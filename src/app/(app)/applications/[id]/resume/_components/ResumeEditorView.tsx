@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FolderOpen, Download, FileText, FileDown } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Download, FileText, FileDown, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import type { ApplicationDetail } from '@/types/applications';
 import type { ResumeDraft } from '@prisma/client';
 import { useExport } from '@/hooks/use-export';
 import { toast } from 'sonner';
+import { syncWorkExperienceFromMaster } from '@/server/actions/resume-drafts';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 
@@ -37,18 +38,40 @@ export function ResumeEditorView({
   const [drafts, setDrafts] = useState(initialDrafts);
   const [activeDraft, setActiveDraftState] = useState(initialDraft);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
+  const [isSyncing, startSync] = useTransition();
   const { exportResume, isExporting } = useExport();
 
   function handleDraftSwitch(draft: ResumeDraft) {
     setActiveDraftState(draft);
+    setEditorKey((k) => k + 1);
   }
 
   function handleDraftsUpdate(newDrafts: ResumeDraft[], newActiveId?: string) {
     setDrafts(newDrafts);
     if (newActiveId) {
       const found = newDrafts.find((d) => d.id === newActiveId);
-      if (found) setActiveDraftState(found);
+      if (found) {
+        setActiveDraftState(found);
+        setEditorKey((k) => k + 1);
+      }
     }
+  }
+
+  function handleSyncFromMaster() {
+    if (!activeDraft) return;
+    startSync(async () => {
+      try {
+        const newContent = await syncWorkExperienceFromMaster(activeDraft.id);
+        setActiveDraftState((prev) =>
+          prev ? { ...prev, content: newContent as unknown as typeof prev.content } : prev
+        );
+        setEditorKey((k) => k + 1);
+        toast.success('Work experience synced from Master Resume');
+      } catch {
+        toast.error('Failed to sync from master');
+      }
+    });
   }
 
   if (!activeDraft) {
@@ -80,6 +103,16 @@ export function ResumeEditorView({
 
         <Button variant="ghost" size="sm" onClick={() => setSheetOpen(true)}>
           <FolderOpen className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSyncFromMaster}
+          disabled={isSyncing}
+          title="Sync work experience from Master Resume"
+        >
+          <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
         </Button>
 
         <div className="flex-1" />
@@ -126,7 +159,7 @@ export function ResumeEditorView({
 
       {/* Two-panel layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6">
-        <ResumeEditorLeft draft={activeDraft} />
+        <ResumeEditorLeft key={editorKey} draft={activeDraft} />
         <RightPanelTabs application={application} draft={activeDraft} aiConfigs={aiConfigs} />
       </div>
 

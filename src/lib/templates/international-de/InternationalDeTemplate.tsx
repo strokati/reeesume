@@ -47,6 +47,8 @@ export function InternationalDeTemplate({ data }: TemplateProps) {
         padding: '0.5in',
         maxWidth: '8.5in',
         boxSizing: 'border-box' as const,
+        WebkitBoxDecorationBreak: 'clone' as const,
+        boxDecorationBreak: 'clone' as const,
       }}
     >
       {/* Header with photo */}

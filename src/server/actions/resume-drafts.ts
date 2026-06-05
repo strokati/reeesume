@@ -44,6 +44,7 @@ async function buildInitialContent(
         companyName: c.name,
         startDate: r.startDate ?? undefined,
         endDate: r.endDate ?? undefined,
+        workArrangement: r.workArrangement ?? undefined,
         responsibilities: ((r.responsibilities as string[] | null) ?? []).map((t) => ({
           text: t,
           source: 'master' as const,
@@ -53,6 +54,20 @@ async function buildInitialContent(
           source: 'master' as const,
         })),
         technologies: (r.technologies as string[] | null) ?? undefined,
+        projects: r.projects.map((p) => ({
+          name: p.name,
+          startDate: p.startDate ?? undefined,
+          endDate: p.endDate ?? undefined,
+          description: p.description ?? undefined,
+          contribution: p.contribution ?? undefined,
+          responsibilities: ((p.responsibilities as string[] | null) ?? []).map((t) => ({
+            text: t,
+            source: 'master' as const,
+          })),
+          technologies: (p.technologies as string[] | null) ?? undefined,
+          outcome: p.outcome ?? undefined,
+          source: 'master' as const,
+        })),
         source: 'master' as const,
       }))
     ),
@@ -263,4 +278,61 @@ export async function duplicateDraft(id: string): Promise<string> {
 
   revalidatePath(`/applications/${draft.applicationId}/resume`);
   return copy.id;
+}
+
+export async function syncWorkExperienceFromMaster(draftId: string): Promise<ResumeDraftContent> {
+  const userId = await requireAuth();
+
+  const draft = await db.resumeDraft.findUnique({
+    where: { id: draftId },
+    include: { application: true },
+  });
+  if (!draft) throw new Error('Draft not found.');
+
+  const full = await getFullMasterResume(userId, draft.application.masterResumeId);
+  const freshWorkExperience = (full.workCompanies ?? []).flatMap((c) =>
+    c.roles.map((r) => ({
+      roleId: r.id,
+      title: r.title,
+      companyName: c.name,
+      startDate: r.startDate ?? undefined,
+      endDate: r.endDate ?? undefined,
+      workArrangement: r.workArrangement ?? undefined,
+      responsibilities: ((r.responsibilities as string[] | null) ?? []).map((t) => ({
+        text: t,
+        source: 'master' as const,
+      })),
+      achievements: ((r.achievements as string[] | null) ?? []).map((t) => ({
+        text: t,
+        source: 'master' as const,
+      })),
+      technologies: (r.technologies as string[] | null) ?? undefined,
+      projects: r.projects.map((p) => ({
+        name: p.name,
+        startDate: p.startDate ?? undefined,
+        endDate: p.endDate ?? undefined,
+        description: p.description ?? undefined,
+        contribution: p.contribution ?? undefined,
+        responsibilities: ((p.responsibilities as string[] | null) ?? []).map((t) => ({
+          text: t,
+          source: 'master' as const,
+        })),
+        technologies: (p.technologies as string[] | null) ?? undefined,
+        outcome: p.outcome ?? undefined,
+        source: 'master' as const,
+      })),
+      source: 'master' as const,
+    }))
+  );
+
+  const existing = draft.content as unknown as ResumeDraftContent;
+  const updated: ResumeDraftContent = { ...existing, workExperience: freshWorkExperience };
+
+  await db.resumeDraft.update({
+    where: { id: draftId },
+    data: { content: JSON.parse(JSON.stringify(updated)) },
+  });
+
+  revalidatePath(`/applications/${draft.applicationId}/resume`);
+  return updated;
 }

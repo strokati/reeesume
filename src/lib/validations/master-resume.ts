@@ -26,6 +26,7 @@ export const CreateWorkRoleSchema = z.object({
   title: z.string().min(1, 'Role title is required'),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  workArrangement: z.enum(['On-Site', 'Hybrid', 'Remote']).optional(),
   responsibilities: z.array(z.string()).optional(),
   achievements: z.array(z.string()).optional(),
   technologies: z.array(z.string()).optional(),
@@ -39,6 +40,7 @@ export const CreateWorkProjectSchema = z.object({
   endDate: z.string().optional(),
   description: z.string().optional(),
   contribution: z.string().optional(),
+  responsibilities: z.array(z.string()).optional(),
   technologies: z.array(z.string()).optional(),
   outcome: z.string().optional(),
 });

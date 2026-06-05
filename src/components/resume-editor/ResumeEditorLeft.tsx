@@ -11,6 +11,7 @@ import type { ResumeDraft } from '@prisma/client';
 import type {
   ResumeDraftContent,
   DraftWorkRole,
+  DraftWorkProject,
   DraftBullet,
   ContentSource,
 } from '@/types/resume-draft';
@@ -77,7 +78,7 @@ export function ResumeEditorLeft({ draft }: { draft: ResumeDraft }) {
             value={localContent.targetTitle ?? ''}
             onChange={(e) => updateContent((c) => ({ ...c, targetTitle: e.target.value }))}
             placeholder="Target Title"
-            className="text-lg font-semibold border-0 p-0 h-auto focus-visible:ring-0"
+            className="text-lg font-semibold border-0 rounded-xl p-4 h-auto focus-visible:ring-0"
           />
         </CardContent>
       </Card>
@@ -95,7 +96,7 @@ export function ResumeEditorLeft({ draft }: { draft: ResumeDraft }) {
               value={localContent.summary ?? ''}
               onChange={(e) => updateContent((c) => ({ ...c, summary: e.target.value }))}
               placeholder="Professional summary..."
-              className="min-h-[80px] text-sm border-0 p-0 focus-visible:ring-0 resize-none"
+              className="min-h-[80px] text-sm border-0 p-4 focus-visible:ring-0 resize-none"
             />
           </CardContent>
         </Card>
@@ -299,11 +300,16 @@ function DraftWorkRoleCard({
   }
 
   return (
-    <div className="space-y-2 rounded-xl border p-3">
+    <div className="space-y-2 rounded-xl border p-4">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium">{role.title}</p>
           <p className="text-xs text-muted-foreground">{role.companyName}</p>
+          {role.workArrangement && (
+            <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.55rem] font-medium mt-0.5 border-slate-200 text-slate-600 bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:bg-slate-900/20">
+              {role.workArrangement}
+            </span>
+          )}
         </div>
         <SourceBadge source={role.source} />
       </div>
@@ -339,6 +345,70 @@ function DraftWorkRoleCard({
               providerId={providerId}
               onUpdate={(text) => updateBullet(bi, text, 'achievements')}
               onRephrase={(text) => handleRephrase(bi, text, 'achievements')}
+            />
+          ))}
+        </div>
+      )}
+
+      {role.projects && role.projects.length > 0 && (
+        <div className="space-y-2 pt-1">
+          <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground font-medium">
+            Projects
+          </p>
+          {role.projects.map((proj, pi) => (
+            <DraftWorkProjectRow
+              key={pi}
+              project={proj}
+              roleTitle={role.title}
+              providerId={providerId}
+              onChange={(updated) => {
+                const updatedProjects = [...(role.projects ?? [])];
+                updatedProjects[pi] = updated;
+                onChange({ ...role, projects: updatedProjects });
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DraftWorkProjectRow({
+  project,
+  roleTitle,
+  providerId,
+  onChange,
+}: {
+  project: DraftWorkProject;
+  roleTitle: string;
+  providerId: string;
+  onChange: (updated: DraftWorkProject) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed px-3 py-2 space-y-1">
+      <div className="flex items-start justify-between">
+        <p className="text-xs font-medium">{project.name}</p>
+        <SourceBadge source={project.source} />
+      </div>
+      {project.responsibilities && project.responsibilities.length > 0 && (
+        <div className="space-y-1">
+          {project.responsibilities.map((bullet, bi) => (
+            <DraftBulletRow
+              key={bi}
+              bullet={bullet}
+              context={`${roleTitle} — ${project.name}`}
+              providerId={providerId}
+              onUpdate={(text) => {
+                const updated = [...project.responsibilities!];
+                updated[bi] = { ...updated[bi], text, source: 'manual' as const };
+                onChange({ ...project, responsibilities: updated });
+              }}
+              onRephrase={(text) => {
+                const updated = [...project.responsibilities!];
+                updated[bi] = { ...updated[bi], text, source: 'ai' as const };
+                onChange({ ...project, responsibilities: updated });
+              }}
             />
           ))}
         </div>

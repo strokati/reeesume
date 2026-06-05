@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -136,4 +136,25 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ── Cover Letter editor typography ── */
+.cl-editor .ProseMirror {
+  outline: none;
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.85;
+  color: inherit;
+}
+.cl-editor .ProseMirror p {
+  margin: 0 0 1.1em;
+}
+.cl-editor .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+.cl-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: oklch(0.6 0 0 / 50%);
+  pointer-events: none;
+  height: 0;
 }

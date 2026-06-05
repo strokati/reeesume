@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import type { WorkCompanyWithRoles } from '@/types/master-resume';
 type WorkProject = WorkCompanyWithRoles['roles'][number]['projects'][number];
 
 export function WorkProjectCard({ project, roleId }: { project: WorkProject; roleId: string }) {
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -24,6 +26,7 @@ export function WorkProjectCard({ project, roleId }: { project: WorkProject; rol
       try {
         await deleteWorkProject(project.id);
         toast.success('Project deleted');
+        router.refresh();
       } catch {
         toast.error('Failed to delete project');
       }
@@ -31,6 +34,7 @@ export function WorkProjectCard({ project, roleId }: { project: WorkProject; rol
   }
 
   const techs = (project.technologies as string[] | null) ?? [];
+  const responsibilities = (project.responsibilities as string[] | null) ?? [];
 
   return (
     <>
@@ -73,6 +77,18 @@ export function WorkProjectCard({ project, roleId }: { project: WorkProject; rol
         {!collapsed && (
           <CardContent className="px-3 pb-3 pt-0 space-y-1 text-sm">
             {project.description && <p>{project.description}</p>}
+            {responsibilities.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mt-1 mb-0.5">
+                  Responsibilities
+                </p>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  {responsibilities.map((r, i) => (
+                    <li key={i}>{r}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {project.contribution && (
               <p className="text-muted-foreground">
                 <span className="font-medium">Contribution:</span> {project.contribution}

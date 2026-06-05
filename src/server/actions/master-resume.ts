@@ -246,6 +246,57 @@ export async function reorderWorkCompanies(resumeId: string, orderedIds: string[
 // Work Roles
 // =============================================================================
 
+export async function createWorkRoleWithCompany(
+  resumeId: string,
+  data: {
+    companyName: string;
+    companyLocation?: string;
+    employmentType?: string;
+    roleTitle: string;
+    startDate?: string;
+    endDate?: string;
+    workArrangement?: 'On-Site' | 'Hybrid' | 'Remote';
+  }
+): Promise<void> {
+  await requireAuth();
+  const schema = z.object({
+    companyName: z.string().min(1, 'Company name is required'),
+    companyLocation: z.string().optional(),
+    employmentType: z.enum(['Full-time', 'Part-time', 'Contract', 'Freelance']).optional(),
+    roleTitle: z.string().min(1, 'Role title is required'),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    workArrangement: z.enum(['On-Site', 'Hybrid', 'Remote']).optional(),
+  });
+  const validated = schema.parse(data);
+  try {
+    const companyCount = await db.workCompany.count({ where: { resumeId } });
+    const company = await db.workCompany.create({
+      data: {
+        resumeId,
+        name: validated.companyName,
+        location: validated.companyLocation,
+        employmentType: validated.employmentType,
+        order: companyCount,
+      },
+    });
+    await db.workRole.create({
+      data: {
+        companyId: company.id,
+        title: validated.roleTitle,
+        startDate: validated.startDate,
+        endDate: validated.endDate,
+        workArrangement: validated.workArrangement,
+        order: 0,
+      },
+    });
+  } catch {
+    throw new Error('Failed to create role.');
+  } finally {
+    revalidatePath('/master-resume');
+  }
+}
+
 export async function createWorkRole(
   companyId: string,
   data: CreateWorkRoleInput
@@ -781,11 +832,11 @@ export async function applyImportedResume(
         const company = await tx.workCompany.create({
           data: {
             resumeId,
-            name: c.name,
-            location: c.location,
-            employmentType: c.employmentType,
-            startDate: c.startDate,
-            endDate: c.endDate,
+            name: c.name ?? '',
+            location: c.location ?? undefined,
+            employmentType: c.employmentType ?? undefined,
+            startDate: c.startDate ?? undefined,
+            endDate: c.endDate ?? undefined,
             order: existingCount + ci,
           },
         });
@@ -795,9 +846,10 @@ export async function applyImportedResume(
             const role = await tx.workRole.create({
               data: {
                 companyId: company.id,
-                title: r.title,
-                startDate: r.startDate,
-                endDate: r.endDate,
+                title: r.title ?? '',
+                startDate: r.startDate ?? undefined,
+                endDate: r.endDate ?? undefined,
+                workArrangement: r.workArrangement ?? undefined,
                 responsibilities: r.responsibilities ?? undefined,
                 achievements: r.achievements ?? undefined,
                 technologies: r.technologies ?? undefined,
@@ -806,15 +858,18 @@ export async function applyImportedResume(
             });
             if (r.projects?.length) {
               await tx.workProject.createMany({
-                data: r.projects.map((p, pi) => ({
+                data: r.projects
+                  .filter((p) => p.name)
+                  .map((p, pi) => ({
                   roleId: role.id,
-                  name: p.name,
-                  startDate: p.startDate,
-                  endDate: p.endDate,
-                  description: p.description,
-                  contribution: p.contribution,
+                  name: p.name!,
+                  startDate: p.startDate ?? undefined,
+                  endDate: p.endDate ?? undefined,
+                  description: p.description ?? undefined,
+                  contribution: p.contribution ?? undefined,
+                  responsibilities: p.responsibilities ?? undefined,
                   technologies: p.technologies ?? undefined,
-                  outcome: p.outcome,
+                  outcome: p.outcome ?? undefined,
                   order: pi,
                 })),
               });
@@ -827,16 +882,18 @@ export async function applyImportedResume(
     if (importedData.educations?.length) {
       const count = await tx.education.count({ where: { resumeId } });
       await tx.education.createMany({
-        data: importedData.educations.map((e, i) => ({
+        data: importedData.educations
+          .filter((e) => e.institution)
+          .map((e, i) => ({
           resumeId,
-          institution: e.institution,
-          degree: e.degree,
-          field: e.field,
-          location: e.location,
-          startDate: e.startDate,
-          endDate: e.endDate,
-          gpa: e.gpa,
-          honors: e.honors,
+          institution: e.institution!,
+          degree: e.degree ?? undefined,
+          field: e.field ?? undefined,
+          location: e.location ?? undefined,
+          startDate: e.startDate ?? undefined,
+          endDate: e.endDate ?? undefined,
+          gpa: e.gpa ?? undefined,
+          honors: e.honors ?? undefined,
           activities: e.activities ?? undefined,
           order: count + i,
         })),
@@ -846,11 +903,13 @@ export async function applyImportedResume(
     if (importedData.skills?.length) {
       const count = await tx.skill.count({ where: { resumeId } });
       await tx.skill.createMany({
-        data: importedData.skills.map((s, i) => ({
+        data: importedData.skills
+          .filter((s) => s.name)
+          .map((s, i) => ({
           resumeId,
-          name: s.name,
-          category: s.category,
-          level: s.level,
+          name: s.name!,
+          category: s.category ?? undefined,
+          level: s.level ?? undefined,
           order: count + i,
         })),
       });
@@ -859,14 +918,16 @@ export async function applyImportedResume(
     if (importedData.certifications?.length) {
       const count = await tx.certification.count({ where: { resumeId } });
       await tx.certification.createMany({
-        data: importedData.certifications.map((c, i) => ({
+        data: importedData.certifications
+          .filter((c) => c.name)
+          .map((c, i) => ({
           resumeId,
-          name: c.name,
-          issuer: c.issuer,
-          issueDate: c.issueDate,
-          expiryDate: c.expiryDate,
-          credentialId: c.credentialId,
-          url: c.url,
+          name: c.name!,
+          issuer: c.issuer ?? undefined,
+          issueDate: c.issueDate ?? undefined,
+          expiryDate: c.expiryDate ?? undefined,
+          credentialId: c.credentialId ?? undefined,
+          url: c.url ?? undefined,
           order: count + i,
         })),
       });
@@ -875,12 +936,14 @@ export async function applyImportedResume(
     if (importedData.awards?.length) {
       const count = await tx.award.count({ where: { resumeId } });
       await tx.award.createMany({
-        data: importedData.awards.map((a, i) => ({
+        data: importedData.awards
+          .filter((a) => a.title)
+          .map((a, i) => ({
           resumeId,
-          title: a.title,
-          issuer: a.issuer,
-          date: a.date,
-          description: a.description,
+          title: a.title!,
+          issuer: a.issuer ?? undefined,
+          date: a.date ?? undefined,
+          description: a.description ?? undefined,
           order: count + i,
         })),
       });
@@ -889,16 +952,18 @@ export async function applyImportedResume(
     if (importedData.projects?.length) {
       const count = await tx.project.count({ where: { resumeId } });
       await tx.project.createMany({
-        data: importedData.projects.map((p, i) => ({
+        data: importedData.projects
+          .filter((p) => p.name)
+          .map((p, i) => ({
           resumeId,
-          name: p.name,
-          description: p.description,
-          role: p.role,
-          startDate: p.startDate,
-          endDate: p.endDate,
+          name: p.name!,
+          description: p.description ?? undefined,
+          role: p.role ?? undefined,
+          startDate: p.startDate ?? undefined,
+          endDate: p.endDate ?? undefined,
           technologies: p.technologies ?? undefined,
-          url: p.url,
-          repoUrl: p.repoUrl,
+          url: p.url ?? undefined,
+          repoUrl: p.repoUrl ?? undefined,
           order: count + i,
         })),
       });
@@ -907,13 +972,15 @@ export async function applyImportedResume(
     if (importedData.volunteeringRoles?.length) {
       const count = await tx.volunteeringRole.count({ where: { resumeId } });
       await tx.volunteeringRole.createMany({
-        data: importedData.volunteeringRoles.map((v, i) => ({
+        data: importedData.volunteeringRoles
+          .filter((v) => v.organization)
+          .map((v, i) => ({
           resumeId,
-          organization: v.organization,
-          role: v.role,
-          location: v.location,
-          startDate: v.startDate,
-          endDate: v.endDate,
+          organization: v.organization!,
+          role: v.role ?? undefined,
+          location: v.location ?? undefined,
+          startDate: v.startDate ?? undefined,
+          endDate: v.endDate ?? undefined,
           responsibilities: v.responsibilities ?? undefined,
           order: count + i,
         })),
@@ -923,15 +990,17 @@ export async function applyImportedResume(
     if (importedData.publications?.length) {
       const count = await tx.publication.count({ where: { resumeId } });
       await tx.publication.createMany({
-        data: importedData.publications.map((p, i) => ({
+        data: importedData.publications
+          .filter((p) => p.title)
+          .map((p, i) => ({
           resumeId,
-          title: p.title,
-          authors: p.authors,
-          publisher: p.publisher,
-          date: p.date,
-          url: p.url,
-          doi: p.doi,
-          description: p.description,
+          title: p.title!,
+          authors: p.authors ?? undefined,
+          publisher: p.publisher ?? undefined,
+          date: p.date ?? undefined,
+          url: p.url ?? undefined,
+          doi: p.doi ?? undefined,
+          description: p.description ?? undefined,
           order: count + i,
         })),
       });

@@ -20,9 +20,18 @@ export function convertDraftToResumeData(draftContent: ResumeDraftContent): Resu
     title: role.title,
     startDate: role.startDate,
     endDate: role.endDate,
+    workArrangement: role.workArrangement,
     responsibilities: role.responsibilities?.map((b) => b.text) ?? [],
     achievements: role.achievements?.map((b) => b.text) ?? [],
     technologies: role.technologies,
+    projects: role.projects?.map((p) => ({
+      name: p.name,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      description: p.description,
+      responsibilities: p.responsibilities?.map((b) => b.text),
+      technologies: p.technologies,
+    })),
   }));
 
   const skills: SkillItem[] = (content.skills ?? []).map((s) => ({

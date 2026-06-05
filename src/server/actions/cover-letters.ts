@@ -147,3 +147,11 @@ export async function duplicateCoverLetterDraft(id: string): Promise<string> {
   revalidatePath(`/applications/${draft.applicationId}/cover-letter`);
   return copy.id;
 }
+
+export async function listCoverLetterDrafts(applicationId: string) {
+  await requireAuth();
+  return db.coverLetterDraft.findMany({
+    where: { applicationId },
+    orderBy: { createdAt: 'desc' },
+  });
+}

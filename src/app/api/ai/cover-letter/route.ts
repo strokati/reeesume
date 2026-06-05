@@ -45,35 +45,66 @@ export async function POST(req: NextRequest) {
       providerId
     );
 
-    // Create or update cover letter draft after streaming
+    // Convert AI JSON response to Tiptap-compatible HTML
     void result.text.then(async (text) => {
-      if (text) {
-        try {
-          if (draftId) {
-            await db.coverLetterDraft.update({
-              where: { id: draftId },
-              data: {
-                content: text,
-                tone,
-                status: 'draft',
-              },
-            });
-          } else {
-            const count = await db.coverLetterDraft.count({
-              where: { applicationId },
-            });
-            await db.coverLetterDraft.create({
-              data: {
-                applicationId,
-                name: `Draft ${count + 1}`,
-                content: text,
-                tone,
-              },
-            });
+      if (!text) return;
+
+      let htmlContent: string;
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as {
+            hiringManager?: string;
+            opening?: string;
+            body?: string[];
+            closing?: string;
+          };
+          const paragraphs: string[] = [];
+          if (parsed.hiringManager) {
+            paragraphs.push(`<p>Dear ${parsed.hiringManager},</p>`);
           }
-        } catch (err) {
-          console.error('Failed to save cover letter draft:', err);
+          if (parsed.opening) paragraphs.push(`<p>${parsed.opening}</p>`);
+          (parsed.body ?? []).forEach((p) => paragraphs.push(`<p>${p}</p>`));
+          if (parsed.closing) paragraphs.push(`<p>${parsed.closing}</p>`);
+          htmlContent = paragraphs.join('') || '<p></p>';
+        } else {
+          // Plain text fallback: wrap each non-empty line in <p>
+          htmlContent =
+            text
+              .split('\n')
+              .filter((l) => l.trim())
+              .map((l) => `<p>${l}</p>`)
+              .join('') || '<p></p>';
         }
+      } catch {
+        htmlContent = `<p>${text}</p>`;
+      }
+
+      try {
+        if (draftId) {
+          await db.coverLetterDraft.update({
+            where: { id: draftId },
+            data: {
+              content: htmlContent,
+              tone,
+              status: 'draft',
+            },
+          });
+        } else {
+          const count = await db.coverLetterDraft.count({
+            where: { applicationId },
+          });
+          await db.coverLetterDraft.create({
+            data: {
+              applicationId,
+              name: `Draft ${count + 1}`,
+              content: htmlContent,
+              tone,
+            },
+          });
+        }
+      } catch (err) {
+        console.error('Failed to save cover letter draft:', err);
       }
     });
 

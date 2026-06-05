@@ -13,12 +13,16 @@ import {
   Bold as BoldIcon,
   Italic,
   Download,
+  ChevronDown,
+  Loader2,
+  FileText,
 } from 'lucide-react';
 import { useExport } from '@/hooks/use-export';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +45,7 @@ import {
   setActiveCoverLetterDraft,
   markCoverLetterReady,
   revertCoverLetterToDraft,
+  listCoverLetterDrafts,
 } from '@/server/actions/cover-letters';
 import { useCoverLetterGeneration } from '@/hooks/use-cover-letter-generation';
 import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
@@ -48,6 +53,52 @@ import type { ApplicationDetail } from '@/types/applications';
 import type { CoverLetterDraft } from '@prisma/client';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
+
+function normalizeToHtml(content: string | null | undefined): string {
+  if (!content) return '<p></p>';
+  const trimmed = content.trim();
+  if (trimmed.startsWith('<')) return trimmed;
+  try {
+    const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]) as {
+        hiringManager?: string;
+        opening?: string;
+        body?: string[];
+        closing?: string;
+      };
+      const paragraphs: string[] = [];
+      if (parsed.hiringManager) paragraphs.push(`<p>Dear ${parsed.hiringManager},</p>`);
+      if (parsed.opening) paragraphs.push(`<p>${parsed.opening}</p>`);
+      (parsed.body ?? []).forEach((p) => paragraphs.push(`<p>${p}</p>`));
+      if (parsed.closing) paragraphs.push(`<p>${parsed.closing}</p>`);
+      return paragraphs.join('') || '<p></p>';
+    }
+  } catch {
+    // fall through
+  }
+  return (
+    trimmed
+      .split('\n')
+      .filter((l) => l.trim())
+      .map((l) => `<p>${l}</p>`)
+      .join('') || '<p></p>'
+  );
+}
+
+const STATUS_BADGE: Record<string, { label: string; className: string }> = {
+  draft: { label: 'Draft', className: 'bg-muted text-muted-foreground border-transparent' },
+  ready: {
+    label: 'Ready',
+    className:
+      'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+  },
+  exported: {
+    label: 'Exported',
+    className:
+      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  },
+};
 
 export function CoverLetterEditorView({
   application,
@@ -88,7 +139,7 @@ export function CoverLetterEditorView({
         horizontalRule: false,
       }),
     ],
-    content: initialDraft?.content || '<p></p>',
+    content: normalizeToHtml(initialDraft?.content),
     onUpdate: ({ editor: e }) => {
       if (!activeDraft) return;
       debouncedSave(activeDraft.id, e.getHTML());
@@ -105,8 +156,9 @@ export function CoverLetterEditorView({
 
   if (!activeDraft) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-        <p>No cover letter draft found.</p>
+      <div className="flex flex-col items-center justify-center py-32 gap-3 text-muted-foreground">
+        <FileText className="h-10 w-10 opacity-30" />
+        <p className="text-sm">No cover letter draft found.</p>
       </div>
     );
   }
@@ -117,7 +169,7 @@ export function CoverLetterEditorView({
       const found = newDrafts.find((d) => d.id === newActiveId);
       if (found) {
         setActiveDraft(found);
-        editor?.commands.setContent(found.content || '<p></p>');
+        editor?.commands.setContent(normalizeToHtml(found.content));
       }
     }
   }
@@ -176,8 +228,12 @@ export function CoverLetterEditorView({
   async function handleGenerate() {
     if (!selectedProvider) return;
     await generate(activeDraft!.tone, selectedProvider, activeDraft!.id);
-    const { getCoverLetterDrafts } = await import('@/server/queries/cover-letters');
-    const updated = await getCoverLetterDrafts(application.id);
+    const updated = await listCoverLetterDrafts(application.id);
+    const refreshed = updated.find((d) => d.id === activeDraft!.id);
+    if (refreshed) {
+      setActiveDraft(refreshed);
+      editor?.commands.setContent(normalizeToHtml(refreshed.content));
+    }
     handleDraftsUpdate(updated, activeDraft!.id);
   }
 
@@ -187,27 +243,34 @@ export function CoverLetterEditorView({
   }
 
   const hasProvider = aiConfigs.length > 0;
+  const statusBadge = STATUS_BADGE[activeDraft.status] ?? STATUS_BADGE.draft;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
+    <div className="max-w-3xl mx-auto flex flex-col gap-0">
+      {/* ── Top action bar ── */}
+      <div className="flex items-center gap-2 pb-4 flex-wrap">
         <Link href={`/applications/${application.id}`}>
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
         </Link>
 
+        <div className="h-4 w-px bg-border mx-1" />
+
+        {/* Draft picker */}
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={
-              <Button variant="outline" size="sm" className="min-w-[120px] justify-between" />
-            }
+            render={<Button variant="ghost" size="sm" className="gap-1 font-medium max-w-45" />}
           >
             <span className="truncate">{activeDraft.name}</span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuContent align="start" className="w-52">
             {drafts.map((d) => (
               <DropdownMenuItem
                 key={d.id}
@@ -218,58 +281,89 @@ export function CoverLetterEditorView({
                     handleDraftsUpdate(drafts, d.id);
                   });
                 }}
+                className="gap-2"
               >
-                {d.name} {d.isActive && <Check className="h-3.5 w-3.5 ml-auto text-primary" />}
+                <span className="flex-1 truncate">{d.name}</span>
+                {d.isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="ghost" size="sm" onClick={() => setSheetOpen(true)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSheetOpen(true)}
+          className="text-muted-foreground"
+          aria-label="Manage drafts"
+        >
           <FolderOpen className="h-4 w-4" />
         </Button>
 
+        {/* Status badge */}
+        <Badge variant="outline" className={statusBadge.className}>
+          {statusBadge.label}
+        </Badge>
+
         <div className="flex-1" />
 
-        <ToneSelector value={activeDraft.tone} onChange={handleToneChange} />
-
+        {/* AI button */}
         {hasProvider && (
-          <Button variant="outline" size="sm" onClick={() => setShowAiPanel(!showAiPanel)}>
-            <Sparkles className="h-4 w-4 mr-1" />
+          <Button
+            variant={showAiPanel ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => setShowAiPanel(!showAiPanel)}
+            className="gap-1.5"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
             Write with AI
           </Button>
         )}
 
+        {/* Mark ready / revert */}
         {activeDraft.status === 'ready' ? (
           <Button
             variant="outline"
             size="sm"
             onClick={handleRevert}
             disabled={isPending}
-            className="text-green-700 border-green-200 hover:bg-green-50 dark:text-green-300 dark:border-green-800"
+            className="gap-1.5 text-green-700 border-green-200 hover:bg-green-50 dark:text-green-300 dark:border-green-800 dark:hover:bg-green-900/20"
           >
-            <Check className="h-4 w-4 mr-1" />
+            <Check className="h-3.5 w-3.5" />
             Ready
-            <RotateCcw className="h-3 w-3 ml-1.5 opacity-50" />
+            <RotateCcw className="h-3 w-3 opacity-50" />
           </Button>
         ) : (
-          <Button size="sm" onClick={handleMarkReady} disabled={isPending}>
-            <Check className="h-4 w-4 mr-1" />
+          <Button size="sm" onClick={handleMarkReady} disabled={isPending} className="gap-1.5">
+            <Check className="h-3.5 w-3.5" />
             Mark Ready
           </Button>
         )}
 
-        <Button variant="outline" size="sm" disabled={isExporting} onClick={handleExport}>
-          <Download className="h-4 w-4 mr-1" />
-          {isExporting ? 'Exporting...' : 'Export'}
+        {/* Export */}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isExporting}
+          onClick={handleExport}
+          className="gap-1.5"
+        >
+          <Download className="h-3.5 w-3.5" />
+          {isExporting ? 'Exporting…' : 'Export'}
         </Button>
       </div>
 
-      {/* AI Generation panel */}
+      {/* ── AI generation panel ── */}
       {showAiPanel && (
-        <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium">Generate with AI</span>
+        <div className="rounded-xl border bg-linear-to-br from-primary/5 to-accent/10 p-4 mb-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm font-medium">Generate Cover Letter</span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground">Tone:</span>
+            <ToneSelector value={activeDraft.tone} onChange={handleToneChange} />
+            <div className="flex-1" />
             <Select
               value={selectedProvider}
               onValueChange={(v) => {
@@ -287,61 +381,102 @@ export function CoverLetterEditorView({
                 ))}
               </SelectContent>
             </Select>
-            <Button size="sm" onClick={handleGenerate} disabled={!selectedProvider || isGenerating}>
-              {isGenerating ? 'Generating...' : 'Generate'}
+            <Button
+              size="sm"
+              onClick={handleGenerate}
+              disabled={!selectedProvider || isGenerating}
+              className="gap-1.5"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Generate
+                </>
+              )}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setShowAiPanel(false)}>
               Cancel
             </Button>
           </div>
-          {genError && <p className="text-sm text-red-600">{genError}</p>}
-          {isGenerating && <p className="text-xs text-muted-foreground">Writing cover letter...</p>}
+          {genError && <p className="text-xs text-destructive">{genError}</p>}
         </div>
       )}
 
-      {/* Hiring manager */}
-      <div className="text-sm text-muted-foreground flex items-center gap-1.5">
-        Dear{' '}
-        <Input
-          value={activeDraft.hiringManager ?? ''}
-          onChange={(e) =>
-            setActiveDraft((prev) => (prev ? { ...prev, hiringManager: e.target.value } : prev))
-          }
-          onBlur={(e) => handleHiringManagerBlur(e.target.value)}
-          placeholder="Hiring Manager"
-          className="h-6 w-40 text-sm border-0 border-b rounded-none px-1 focus-visible:ring-0"
-        />
-        ,
-      </div>
+      {/* ── Document card ── */}
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        {/* Document meta bar */}
+        <div className="px-8 pt-6 pb-4 border-b bg-muted/20">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Cover Letter
+              </p>
+              <p className="font-semibold text-foreground truncate">
+                {application.vacancy?.jobTitle ?? 'Position'}{' '}
+                {application.vacancy?.companyName && (
+                  <span className="font-normal text-muted-foreground">
+                    · {application.vacancy.companyName}
+                  </span>
+                )}
+              </p>
+            </div>
+            {/* Tone selector (non-AI flow) */}
+            {!showAiPanel && (
+              <div className="shrink-0">
+                <ToneSelector value={activeDraft.tone} onChange={handleToneChange} />
+              </div>
+            )}
+          </div>
 
-      {/* Formatting bar */}
-      <div className="flex items-center gap-1 border rounded-t-xl px-2 py-1 bg-muted/30">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0"
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-          data-active={editor?.isActive('bold')}
-        >
-          <BoldIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0"
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-          data-active={editor?.isActive('italic')}
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-      </div>
+          {/* Hiring manager line */}
+          <div className="mt-4 flex items-baseline gap-1.5 text-sm">
+            <span className="text-muted-foreground shrink-0">To:</span>
+            <Input
+              value={activeDraft.hiringManager ?? ''}
+              onChange={(e) =>
+                setActiveDraft((prev) => (prev ? { ...prev, hiringManager: e.target.value } : prev))
+              }
+              onBlur={(e) => handleHiringManagerBlur(e.target.value)}
+              placeholder="Hiring Manager"
+              className="h-7 border-0 border-b rounded-none px-1 focus-visible:ring-0 text-sm bg-transparent w-56"
+            />
+          </div>
+        </div>
 
-      {/* Editor */}
-      <div
-        className="ProseMirror-wrapper min-h-[400px] rounded-b-xl border border-t-0 p-6 focus-within:ring-1 focus-within:ring-primary focus-within:outline-none"
-        onClick={() => editor?.commands.focus()}
-      >
-        <EditorContent editor={editor} />
+        {/* Formatting toolbar */}
+        <div className="flex items-center gap-0.5 px-6 py-1.5 border-b bg-muted/10">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${editor?.isActive('bold') ? 'bg-accent text-accent-foreground' : ''}`}
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+            aria-label="Bold"
+          >
+            <BoldIcon className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${editor?.isActive('italic') ? 'bg-accent text-accent-foreground' : ''}`}
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+            aria-label="Italic"
+          >
+            <Italic className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+
+        {/* Editor body */}
+        <div
+          className="cl-editor px-8 py-8 min-h-96 cursor-text"
+          onClick={() => editor?.commands.focus()}
+        >
+          <EditorContent editor={editor} />
+        </div>
       </div>
 
       {/* Draft sheet */}

@@ -1,6 +1,7 @@
 import type {
   TemplateProps,
   WorkExperienceItem,
+  WorkProjectItem,
   EducationItem,
   SkillItem,
   CertificationItem,
@@ -20,6 +21,8 @@ const STYLES = {
     padding: '0.5in',
     maxWidth: '8.5in',
     boxSizing: 'border-box' as const,
+    WebkitBoxDecorationBreak: 'clone' as const,
+    boxDecorationBreak: 'clone' as const,
   },
   name: {
     fontSize: '18pt',
@@ -194,7 +197,10 @@ function WorkExperienceSection({ items }: { items: WorkExperienceItem[] }) {
               </span>
             ) : null}
           </div>
-          <div style={STYLES.entryMeta}>{item.companyName}</div>
+          <div style={STYLES.entryMeta}>
+            {item.companyName}
+            {item.workArrangement ? ` · ${item.workArrangement}` : ''}
+          </div>
           {item.technologies && item.technologies.length > 0 && (
             <div style={{ fontSize: '9.5pt', color: '#444', margin: '2pt 0' }}>
               Technologies: {item.technologies.join(', ')}
@@ -206,9 +212,44 @@ function WorkExperienceSection({ items }: { items: WorkExperienceItem[] }) {
           {item.achievements.map((a, j) => (
             <Bullet key={`ach-${j}`}>{a}</Bullet>
           ))}
+          {item.projects && item.projects.length > 0 && (
+            <div style={{ marginTop: '4pt' }}>
+              {item.projects.map((proj, pi) => (
+                <WorkRoleProjectEntry key={pi} project={proj} />
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </>
+  );
+}
+
+function WorkRoleProjectEntry({ project }: { project: WorkProjectItem }) {
+  return (
+    <div style={{ marginBottom: '4pt', paddingLeft: '8pt' }}>
+      <div style={{ ...STYLES.entryHeader }}>
+        <span style={{ fontWeight: 600, fontSize: '10pt' }}>{project.name}</span>
+        {(project.startDate || project.endDate) && (
+          <span style={STYLES.entryMetaRight}>
+            {formatDataRange(project.startDate, project.endDate)}
+          </span>
+        )}
+      </div>
+      {project.description && (
+        <p style={{ ...STYLES.itemParagraph, fontSize: '10pt', color: '#333' }}>
+          {project.description}
+        </p>
+      )}
+      {project.responsibilities?.map((r, i) => (
+        <Bullet key={i}>{r}</Bullet>
+      ))}
+      {project.technologies && project.technologies.length > 0 && (
+        <p style={{ fontSize: '9.5pt', color: '#444', margin: '1pt 0' }}>
+          Technologies: {project.technologies.join(', ')}
+        </p>
+      )}
+    </div>
   );
 }
 
