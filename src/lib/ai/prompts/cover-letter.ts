@@ -6,7 +6,7 @@ export type CoverLetterTone = 'professional' | 'confident' | 'warm';
  * Tone-specific writing instructions injected into the user prompt.
  * Each tone changes vocabulary, sentence structure, and emotional register.
  */
-const TONE_INSTRUCTIONS: Record<CoverLetterTone, string> = {
+export const TONE_INSTRUCTIONS: Record<CoverLetterTone, string> = {
   professional: `
 - Use formal, precise language. Prioritize concrete outcomes and measurable results.
 - Avoid personal anecdotes or emotional language. Lead with impact.

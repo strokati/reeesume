@@ -1,10 +1,8 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import {
-  buildAnalyzeVacancySystem,
-  analyzeVacancyPrompt,
-  summarizeMasterResume,
-} from '@/lib/ai/prompts/analyze-vacancy';
+import { summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
+import { resolvePrompt } from '@/lib/ai/prompts/defaults';
+import { languageLabel } from '@/lib/utils/language';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { db } from '@/lib/db/client';
 
@@ -28,10 +26,21 @@ export async function analyzeVacancy(userId: string, applicationId: string, prov
 
   const { model, modelName } = await getProviderForUser(userId, providerId);
 
+  const system = await resolvePrompt(
+    'analyze-vacancy.system',
+    { language, languageLabel: languageLabel(language) },
+    userId
+  );
+  const prompt = await resolvePrompt(
+    'analyze-vacancy.user',
+    { vacancyText: application.vacancy.rawText, masterResumeSummary: resumeSummary },
+    userId
+  );
+
   const result = streamText({
     model,
-    system: buildAnalyzeVacancySystem(language),
-    prompt: analyzeVacancyPrompt(application.vacancy.rawText, resumeSummary),
+    system,
+    prompt,
     onFinish: async (event) => {
       const durationMs = Date.now() - startTime;
       const usage = event.totalUsage;

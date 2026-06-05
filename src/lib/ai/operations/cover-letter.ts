@@ -1,10 +1,8 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import {
-  buildCoverLetterSystem,
-  buildCoverLetterPrompt,
-  type CoverLetterTone,
-} from '@/lib/ai/prompts/cover-letter';
+import { type CoverLetterTone, TONE_INSTRUCTIONS } from '@/lib/ai/prompts/cover-letter';
+import { resolvePrompt } from '@/lib/ai/prompts/defaults';
+import { languageLabel } from '@/lib/utils/language';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
 import { resumeContentToText } from '@/lib/ai/prompts/ats-check';
@@ -54,17 +52,47 @@ export async function generateCoverLetter(
 
   const { model, modelName } = await getProviderForUser(userId, providerId);
 
-  const result = streamText({
-    model,
-    system: buildCoverLetterSystem(language),
-    prompt: buildCoverLetterPrompt({
-      tone,
-      resumeText,
-      vacancyText: application.vacancy.rawText,
+  const langLabel = languageLabel(language);
+  const marketRules =
+    language === 'de'
+      ? `### German ("de") Market Rules
+- Use formal "Sie" address consistently throughout. Never "du".
+- Structure: Betreff line → formal greeting (Sehr geehrte/r [Name], or Sehr geehrte Damen und Herren,) → Einleitung → Hauptteil (2–3 Absätze) → Schluss → formal closing (Mit freundlichen Grüßen).
+- German cover letters are more formal and structured than English ones — minimize colloquial phrasing.
+- Tone mapping: "professional" = sachlich und präzise, "confident" = selbstbewusst und direkt, "warm" = persönlich aber professionell.
+- Strict 1-page maximum — this is a firm convention in German-speaking markets (DE, AT, CH).
+- Avoid Anglo-American opening styles ("I am thrilled to...") — begin with a direct, confident statement of purpose.`
+      : language === 'en'
+        ? `### English ("en") Market Rules
+- Use the hiring manager's name when available; avoid "To Whom It May Concern".
+- Standard structure: greeting → opening hook → 2–3 body paragraphs → closing + CTA.
+- Tone options as defined in the system prompt.
+- British English ("en-GB"): more restrained and formal. American English ("en-US"): slightly warmer and more direct. Match the company's country of origin when detectable.`
+        : '';
+
+  const system = await resolvePrompt(
+    'cover-letter.system',
+    { languageLabel: langLabel, language, marketRules },
+    userId
+  );
+  const prompt = await resolvePrompt(
+    'cover-letter.user',
+    {
       contactName,
       companyName: application.vacancy.companyName,
       jobTitle: application.vacancy.jobTitle,
-    }),
+      tone,
+      toneInstructions: TONE_INSTRUCTIONS[tone],
+      resumeText,
+      vacancyText: application.vacancy.rawText,
+    },
+    userId
+  );
+
+  const result = streamText({
+    model,
+    system,
+    prompt,
     onFinish: async (event) => {
       const durationMs = Date.now() - startTime;
       const usage = event.totalUsage;

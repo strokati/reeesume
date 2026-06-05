@@ -1,10 +1,8 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import {
-  buildAtsCheckSystem,
-  buildAtsCheckPrompt,
-  resumeContentToText,
-} from '@/lib/ai/prompts/ats-check';
+import { resumeContentToText } from '@/lib/ai/prompts/ats-check';
+import { resolvePrompt } from '@/lib/ai/prompts/defaults';
+import { languageLabel } from '@/lib/utils/language';
 import { db } from '@/lib/db/client';
 
 export async function runAtsCheck(userId: string, resumeDraftId: string, providerId: string) {
@@ -31,10 +29,17 @@ export async function runAtsCheck(userId: string, resumeDraftId: string, provide
 
   const { model, modelName } = await getProviderForUser(userId, providerId);
 
+  const system = await resolvePrompt(
+    'ats-check.system',
+    { languageLabel: languageLabel(language) },
+    userId
+  );
+  const prompt = await resolvePrompt('ats-check.user', { resumeText, vacancyText }, userId);
+
   const result = streamText({
     model,
-    system: buildAtsCheckSystem(language),
-    prompt: buildAtsCheckPrompt(resumeText, vacancyText),
+    system,
+    prompt,
     onFinish: async (event) => {
       const durationMs = Date.now() - startTime;
       const usage = event.totalUsage;

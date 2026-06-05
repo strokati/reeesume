@@ -1,9 +1,7 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import {
-  buildResumeSuggestionsSystem,
-  buildResumeSuggestionsPrompt,
-} from '@/lib/ai/prompts/resume-suggestions';
+import { resolvePrompt } from '@/lib/ai/prompts/defaults';
+import { languageLabel } from '@/lib/utils/language';
 import { summarizeMasterResume } from '@/lib/ai/prompts/analyze-vacancy';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { db } from '@/lib/db/client';
@@ -59,20 +57,61 @@ export async function getResumeSuggestions(
     fullResume as unknown as Parameters<typeof summarizeMasterResume>[0]
   );
 
-  const prompt = buildResumeSuggestionsPrompt({
-    vacancyText: application.vacancy.rawText,
-    vacancyAnalysis: application.vacancy.aiAnalysis,
-    masterResumeSummary: resumeSummary,
-    workItems,
-    skillItems,
-    projectItems,
-  });
+  const workSection = workItems.length
+    ? `## Work Experience (with IDs)\n${workItems
+        .map(
+          (w) =>
+            `- Company: "${w.companyName}" (companyId: "${w.companyId}") | Role: "${w.roleTitle}" (roleId: "${w.roleId}")${w.responsibilities?.length ? `\n  Responsibilities: ${w.responsibilities.join('; ')}` : ''}${w.achievements?.length ? `\n  Achievements: ${w.achievements.join('; ')}` : ''}`
+        )
+        .join('\n')}`
+    : '## Work Experience\nNo work experience entries.';
+
+  const skillsSection = skillItems.length
+    ? `## Skills (with IDs)\n${skillItems
+        .map(
+          (s) => `- "${s.name}" (skillId: "${s.skillId}")${s.category ? ` [${s.category}]` : ''}`
+        )
+        .join('\n')}`
+    : '## Skills\nNo skills listed.';
+
+  const projectsSection = projectItems.length
+    ? `## Projects (with IDs)\n${projectItems
+        .map(
+          (p) =>
+            `- "${p.name}" (projectId: "${p.projectId}")${p.description ? `: ${p.description}` : ''}${p.technologies?.length ? ` [${p.technologies.join(', ')}]` : ''}`
+        )
+        .join('\n')}`
+    : '## Projects\nNo projects listed.';
+
+  const analysisSection = application.vacancy.aiAnalysis
+    ? `## Vacancy AI Analysis\n${JSON.stringify(application.vacancy.aiAnalysis, null, 2)}`
+    : '';
+
+  const langLabel = languageLabel(language);
+
+  const system = await resolvePrompt(
+    'resume-suggestions.system',
+    { languageLabel: langLabel },
+    userId
+  );
+  const prompt = await resolvePrompt(
+    'resume-suggestions.user',
+    {
+      vacancyText: application.vacancy.rawText,
+      analysisSection,
+      masterResumeSummary: resumeSummary,
+      workSection,
+      skillsSection,
+      projectsSection,
+    },
+    userId
+  );
 
   const { model, modelName } = await getProviderForUser(userId, providerId);
 
   const result = streamText({
     model,
-    system: buildResumeSuggestionsSystem(language),
+    system,
     prompt,
     onFinish: async (event) => {
       const durationMs = Date.now() - startTime;
