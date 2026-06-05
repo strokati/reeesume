@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -31,6 +31,11 @@ export function WorkRoleCard({
   const [editOpen, setEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const [editingIndex, setEditingIndex] = useState<{
+    field: 'resp' | 'ach';
+    index: number;
+  } | null>(null);
+
   const [responsibilities, setResponsibilities] = useState<string[]>(
     (role.responsibilities as string[] | null) ?? []
   );
@@ -39,18 +44,19 @@ export function WorkRoleCard({
   );
 
   // Re-sync local bullet state when server data changes (e.g. after dialog save + router.refresh)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
+  // Avoid overwriting while the user is actively editing that field.
+  if (
+    editingIndex?.field !== 'resp' &&
+    JSON.stringify(responsibilities) !== JSON.stringify(role.responsibilities)
+  ) {
     setResponsibilities((role.responsibilities as string[] | null) ?? []);
-  }, [JSON.stringify(role.responsibilities)]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
+  }
+  if (
+    editingIndex?.field !== 'ach' &&
+    JSON.stringify(achievements) !== JSON.stringify(role.achievements)
+  ) {
     setAchievements((role.achievements as string[] | null) ?? []);
-  }, [JSON.stringify(role.achievements)]);
-  const [editingIndex, setEditingIndex] = useState<{
-    field: 'resp' | 'ach';
-    index: number;
-  } | null>(null);
+  }
 
   const techs = (role.technologies as string[] | null) ?? [];
 
