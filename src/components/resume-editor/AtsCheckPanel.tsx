@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Lock, Sparkles, Copy, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Lock, Sparkles, Copy, CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,9 +33,15 @@ export function AtsCheckPanel({
     configs.find((c) => c.isDefault)?.providerId ?? configs[0]?.providerId ?? ''
   );
   const [copiedKeyword, setCopiedKeyword] = useState<string | null>(null);
+  const [wantsReanalyze, setWantsReanalyze] = useState(false);
 
   const hasProvider = configs.length > 0;
   const displayResult = result ?? (existingResult as AtsCheckResult | null) ?? null;
+
+  const handleRun = (providerId: string) => {
+    setWantsReanalyze(false);
+    runCheck(providerId);
+  };
 
   if (!hasProvider) {
     return (
@@ -62,7 +68,7 @@ export function AtsCheckPanel({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             ATS Check
           </h3>
-          {(!displayResult || result !== null) && !isLoading && (
+          {!isLoading && !displayResult && !wantsReanalyze && (
             <div className="flex items-center gap-2">
               <Select
                 value={selectedProvider}
@@ -83,19 +89,55 @@ export function AtsCheckPanel({
               </Select>
               <Button
                 size="sm"
-                onClick={() => runCheck(selectedProvider)}
+                onClick={() => handleRun(selectedProvider)}
                 disabled={!selectedProvider}
               >
                 <ShieldCheck className="h-4 w-4 mr-1.5" />
-                {displayResult ? 'Re-run' : 'Run Check'}
+                Run Check
               </Button>
             </div>
           )}
-          {displayResult && result === null && !isLoading && (
-            <Button size="sm" variant="outline" onClick={() => runCheck(selectedProvider)}>
-              <ShieldCheck className="h-4 w-4 mr-1.5" />
-              Re-run
-            </Button>
+
+          {!isLoading && displayResult && !wantsReanalyze && (
+            <div className="flex items-center justify-end">
+              <Button size="sm" variant="outline" onClick={() => setWantsReanalyze(true)}>
+                <RefreshCw className="h-4 w-4 mr-1.5" />
+                Re-run
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && wantsReanalyze && (
+            <div className="flex items-center gap-2">
+              <Select
+                value={selectedProvider}
+                onValueChange={(v) => {
+                  if (v) setSelectedProvider(v);
+                }}
+              >
+                <SelectTrigger className="h-8 w-40 text-xs">
+                  <SelectValue placeholder="Provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {configs.map((c) => (
+                    <SelectItem key={c.providerId} value={c.providerId}>
+                      {PROVIDER_REGISTRY.find((p) => p.id === c.providerId)?.name ?? c.providerId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                onClick={() => handleRun(selectedProvider)}
+                disabled={!selectedProvider}
+              >
+                <ShieldCheck className="h-4 w-4 mr-1.5" />
+                Run Check
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setWantsReanalyze(false)}>
+                Cancel
+              </Button>
+            </div>
           )}
         </div>
 

@@ -331,6 +331,7 @@ model Application {
   dateApplied    DateTime?
   followUpDate   DateTime?
   excitement     Int? // 1–5
+  aiSuggestions  Json? // structured output from resume-suggestions operation
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

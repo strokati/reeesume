@@ -1,7 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Lock, Sparkles, CheckCircle2, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Lock,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  ChevronDown,
+  ChevronRight,
+  RefreshCw,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,16 +30,26 @@ type Config = { providerId: string; model: string; isDefault: boolean; apiKey: s
 export function SuggestionsPanel({
   applicationId,
   configs,
+  existingSuggestions,
 }: {
   applicationId: string;
   configs: Config[];
+  existingSuggestions: unknown;
 }) {
   const { getSuggestions, suggestions, isLoading, error } = useResumeSuggestions(applicationId);
   const [selectedProvider, setSelectedProvider] = useState<string>(
     configs.find((c) => c.isDefault)?.providerId ?? configs[0]?.providerId ?? ''
   );
+  const [wantsRegenerate, setWantsRegenerate] = useState(false);
 
   const hasProvider = configs.length > 0;
+  const displaySuggestions =
+    suggestions ?? (existingSuggestions as ResumeSuggestions | null) ?? null;
+
+  const handleGenerate = (providerId: string) => {
+    setWantsRegenerate(false);
+    getSuggestions(providerId);
+  };
 
   if (!hasProvider) {
     return (
@@ -58,7 +76,7 @@ export function SuggestionsPanel({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             AI Suggestions
           </h3>
-          {!suggestions && !isLoading && (
+          {!isLoading && !displaySuggestions && !wantsRegenerate && (
             <div className="flex items-center gap-2">
               <Select
                 value={selectedProvider}
@@ -79,11 +97,53 @@ export function SuggestionsPanel({
               </Select>
               <Button
                 size="sm"
-                onClick={() => getSuggestions(selectedProvider)}
+                onClick={() => handleGenerate(selectedProvider)}
                 disabled={!selectedProvider}
               >
                 <Sparkles className="h-4 w-4 mr-1.5" />
                 Generate
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && displaySuggestions && !wantsRegenerate && (
+            <div className="flex items-center justify-end">
+              <Button size="sm" variant="outline" onClick={() => setWantsRegenerate(true)}>
+                <RefreshCw className="h-4 w-4 mr-1.5" />
+                Re-generate
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && wantsRegenerate && (
+            <div className="flex items-center gap-2">
+              <Select
+                value={selectedProvider}
+                onValueChange={(v) => {
+                  if (v) setSelectedProvider(v);
+                }}
+              >
+                <SelectTrigger className="h-8 w-40 text-xs">
+                  <SelectValue placeholder="Provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {configs.map((c) => (
+                    <SelectItem key={c.providerId} value={c.providerId}>
+                      {PROVIDER_REGISTRY.find((p) => p.id === c.providerId)?.name ?? c.providerId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                onClick={() => handleGenerate(selectedProvider)}
+                disabled={!selectedProvider}
+              >
+                <Sparkles className="h-4 w-4 mr-1.5" />
+                Generate
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setWantsRegenerate(false)}>
+                Cancel
               </Button>
             </div>
           )}
@@ -97,7 +157,9 @@ export function SuggestionsPanel({
 
         {isLoading && <SuggestionsSkeleton />}
 
-        {suggestions && !isLoading && <SuggestionsContent suggestions={suggestions} />}
+        {displaySuggestions && !isLoading && (
+          <SuggestionsContent suggestions={displaySuggestions} />
+        )}
       </CardContent>
     </Card>
   );
@@ -161,7 +223,7 @@ function SuggestionsContent({ suggestions }: { suggestions: ResumeSuggestions })
                 ) : (
                   <XCircle className="h-3 w-3 mr-1" />
                 )}
-                {s.skillId.slice(0, 8)}...
+                {s.name || s.skillId.slice(0, 8) + '...'}
               </Badge>
             ))}
           </div>
@@ -230,7 +292,8 @@ function WorkSuggestions({ items }: { items: ResumeSuggestions['workExperience']
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
               <span className="text-sm font-medium">
-                {item.companyId.slice(0, 8)}... / {item.roleId.slice(0, 8)}...
+                {item.companyName || item.companyId.slice(0, 8) + '...'} /{' '}
+                {item.roleTitle || item.roleId.slice(0, 8) + '...'}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -281,7 +344,7 @@ function ProjectSuggestionItem({ item }: { item: ResumeSuggestions['projects'][n
         ) : (
           <XCircle className="h-4 w-4 text-muted-foreground" />
         )}
-        <span className="text-sm">{item.projectId.slice(0, 8)}...</span>
+        <span className="text-sm">{item.name || item.projectId.slice(0, 8) + '...'}</span>
       </div>
       <ScoreBar score={item.relevanceScore} />
     </div>

@@ -130,6 +130,22 @@ export async function getResumeSuggestions(
             error: null,
           },
         });
+
+        const text = event.text;
+        if (text) {
+          try {
+            const json = JSON.parse(text);
+            await db.application.update({
+              where: { id: applicationId },
+              data: { aiSuggestions: json },
+            });
+          } catch {
+            await db.application.update({
+              where: { id: applicationId },
+              data: { aiSuggestions: { raw: text } },
+            });
+          }
+        }
       } catch (logErr) {
         console.error('Failed to log AI call:', logErr);
       }

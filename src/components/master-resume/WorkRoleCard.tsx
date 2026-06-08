@@ -45,17 +45,16 @@ export function WorkRoleCard({
 
   // Re-sync local bullet state when server data changes (e.g. after dialog save + router.refresh)
   // Avoid overwriting while the user is actively editing that field.
+  const propResp = (role.responsibilities as string[] | null) ?? [];
+  const propAch = (role.achievements as string[] | null) ?? [];
   if (
     editingIndex?.field !== 'resp' &&
-    JSON.stringify(responsibilities) !== JSON.stringify(role.responsibilities)
+    JSON.stringify(responsibilities) !== JSON.stringify(propResp)
   ) {
-    setResponsibilities((role.responsibilities as string[] | null) ?? []);
+    setResponsibilities(propResp);
   }
-  if (
-    editingIndex?.field !== 'ach' &&
-    JSON.stringify(achievements) !== JSON.stringify(role.achievements)
-  ) {
-    setAchievements((role.achievements as string[] | null) ?? []);
+  if (editingIndex?.field !== 'ach' && JSON.stringify(achievements) !== JSON.stringify(propAch)) {
+    setAchievements(propAch);
   }
 
   const techs = (role.technologies as string[] | null) ?? [];

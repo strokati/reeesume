@@ -12,7 +12,9 @@ You MUST respond with ONLY valid JSON matching this exact schema (no markdown, n
   "workExperience": [
     {
       "companyId": "exact ID from master resume",
+      "companyName": "company name from master resume",
       "roleId": "exact ID from master resume",
+      "roleTitle": "role title from master resume",
       "include": true,
       "relevanceScore": 85,
       "reasoning": "Why this role is relevant",
@@ -22,6 +24,7 @@ You MUST respond with ONLY valid JSON matching this exact schema (no markdown, n
   "skills": [
     {
       "skillId": "exact ID from master resume",
+      "name": "skill name from master resume",
       "include": true,
       "reasoning": "Why this skill matters"
     }
@@ -29,6 +32,7 @@ You MUST respond with ONLY valid JSON matching this exact schema (no markdown, n
   "projects": [
     {
       "projectId": "exact ID from master resume",
+      "name": "project name from master resume",
       "include": true,
       "relevanceScore": 75,
       "reasoning": "Why this project is relevant"
@@ -60,7 +64,9 @@ export interface ResumeSuggestions {
   };
   workExperience: {
     companyId: string;
+    companyName: string;
     roleId: string;
+    roleTitle: string;
     include: boolean;
     relevanceScore: number;
     reasoning: string;
@@ -68,11 +74,13 @@ export interface ResumeSuggestions {
   }[];
   skills: {
     skillId: string;
+    name: string;
     include: boolean;
     reasoning: string;
   }[];
   projects: {
     projectId: string;
+    name: string;
     include: boolean;
     relevanceScore: number;
     reasoning: string;
