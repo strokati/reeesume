@@ -1,0 +1,76 @@
+export const sampleMasterResume = {
+  id: 'resume-1',
+  userId: 'test-user-id',
+  name: 'Main Resume',
+  language: 'en',
+  isDefault: true,
+  targetTitle: 'Senior Frontend Engineer',
+  professionalSummary: 'Experienced frontend engineer with 8 years of experience.',
+  contactInfo: {
+    fullName: 'Jane Doe',
+    email: 'jane@example.com',
+    phone: '+1-555-0123',
+    location: 'San Francisco, CA',
+    linkedin: 'https://linkedin.com/in/janedoe',
+    github: 'https://github.com/janedoe',
+    website: null,
+  },
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-15'),
+};
+
+export const sampleWorkCompany = {
+  id: 'company-1',
+  resumeId: 'resume-1',
+  name: 'Acme Corp',
+  industry: 'Technology',
+  location: 'San Francisco, CA',
+  orderIndex: 0,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  roles: [
+    {
+      id: 'role-1',
+      companyId: 'company-1',
+      jobTitle: 'Senior Frontend Engineer',
+      startDate: new Date('2020-01-01'),
+      endDate: new Date('2024-01-01'),
+      workArrangement: 'hybrid',
+      orderIndex: 0,
+      responsibilities: 'Built component library\nLed migration to hooks',
+      achievements: 'Reduced bundle size by 40%',
+      technologies: 'React, TypeScript, GraphQL',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      projects: [],
+    },
+  ],
+};
+
+export const sampleEducation = {
+  id: 'edu-1',
+  resumeId: 'resume-1',
+  institution: 'UC Berkeley',
+  degree: 'B.S.',
+  field: 'Computer Science',
+  location: 'Berkeley, CA',
+  startDate: new Date('2012-09-01'),
+  endDate: new Date('2016-05-01'),
+  gpa: '3.8',
+  honors: 'Magna Cum Laude',
+  activities: 'ACM, Hackathon team',
+  orderIndex: 0,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+};
+
+export const sampleSkill = {
+  id: 'skill-1',
+  resumeId: 'resume-1',
+  name: 'TypeScript',
+  category: 'Languages',
+  level: 'expert',
+  orderIndex: 0,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+};
