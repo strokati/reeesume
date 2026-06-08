@@ -1,20 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import type { VacancyAnalysis } from '@/types/vacancy-analysis';
 
-export interface VacancyAnalysis {
-  summary: string;
-  responsibilities: string[];
-  mustHaves: string[];
-  niceToHaves: string[];
-  atsKeywords: string[];
-  tone: string;
-  companyCulture: string;
-  masterResumeMatchPreview: {
-    relevant: string[];
-    gaps: string[];
-  };
-}
+export type { VacancyAnalysis };
 
 export function useAnalyzeVacancy(applicationId: string) {
   const [analysis, setAnalysis] = useState<VacancyAnalysis | null>(null);
@@ -51,8 +40,6 @@ export function useAnalyzeVacancy(applicationId: string) {
           fullText += decoder.decode(value, { stream: true });
         }
 
-        // The AI SDK data stream format includes protocol prefixes
-        // Try to extract JSON from the response
         const jsonMatch = fullText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
