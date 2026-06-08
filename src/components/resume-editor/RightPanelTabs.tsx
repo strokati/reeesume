@@ -54,7 +54,11 @@ export function RightPanelTabs({
       {/* Tab content */}
       <div className="pt-4 max-h-[calc(100vh-16rem)] overflow-y-auto">
         {activeTab === 'suggestions' && (
-          <SuggestionsPanel applicationId={application.id} configs={aiConfigs} />
+          <SuggestionsPanel
+            applicationId={application.id}
+            configs={aiConfigs}
+            existingSuggestions={application.aiSuggestions}
+          />
         )}
         {activeTab === 'ats' && (
           <AtsCheckPanel
