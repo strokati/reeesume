@@ -2,7 +2,7 @@ import { languageLabel } from '@/lib/utils/language';
 
 export type RephraseDirection = 'stronger' | 'concise' | 'quantified' | 'formal' | 'casual';
 
-const DIRECTION_INSTRUCTIONS: Record<RephraseDirection, string> = {
+export const DIRECTION_INSTRUCTIONS: Record<RephraseDirection, string> = {
   stronger:
     'Make this bullet point more impactful. Use strong action verbs (e.g. Spearheaded, Architected, Drove). Be bold and emphasize outcomes.',
   concise:

@@ -22,12 +22,13 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  masterResumes    MasterResume[]
-  vacancies        Vacancy[]
-  aiProviderConfig AiProviderConfig[]
-  aiCallLogs       AiCallLog[]
-  sessions         Session[]
-  otpCodes         OtpCode[]
+  masterResumes     MasterResume[]
+  vacancies         Vacancy[]
+  aiProviderConfig  AiProviderConfig[]
+  aiCallLogs        AiCallLog[]
+  aiPromptOverrides AiPromptOverride[]
+  sessions          Session[]
+  otpCodes          OtpCode[]
 
   @@map("users")
 }
@@ -426,4 +427,18 @@ model AiCallLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("ai_call_logs")
+}
+
+model AiPromptOverride {
+  id        String   @id @default(cuid())
+  userId    String
+  promptKey String // e.g. "analyze-vacancy.system", "cover-letter.user"
+  template  String // user-edited template with {{variable}} placeholders
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promptKey])
+  @@map("ai_prompt_overrides")
 }

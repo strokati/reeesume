@@ -1,6 +1,8 @@
 import { streamText } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { buildRephrasePrompt, type RephraseDirection } from '@/lib/ai/prompts/rephrase';
+import { type RephraseDirection, DIRECTION_INSTRUCTIONS } from '@/lib/ai/prompts/rephrase';
+import { resolvePrompt } from '@/lib/ai/prompts/defaults';
+import { languageLabel } from '@/lib/utils/language';
 import { db } from '@/lib/db/client';
 
 export async function rephraseBullet(
@@ -14,9 +16,22 @@ export async function rephraseBullet(
   const startTime = Date.now();
   const { model, modelName } = await getProviderForUser(userId, providerId);
 
+  const languageHint = language ? `\nTarget language: ${languageLabel(language)}.` : '';
+
+  const prompt = await resolvePrompt(
+    'rephrase.user',
+    {
+      directionInstructions: DIRECTION_INSTRUCTIONS[direction],
+      languageHint,
+      context,
+      original,
+    },
+    userId
+  );
+
   const result = streamText({
     model,
-    prompt: buildRephrasePrompt(original, direction, context, language),
+    prompt,
     onFinish: async (event) => {
       const durationMs = Date.now() - startTime;
       const usage = event.totalUsage;

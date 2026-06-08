@@ -1,16 +1,18 @@
 import { streamObject } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { IMPORT_RESUME_SYSTEM } from '@/lib/ai/prompts/import-resume';
+import { resolvePrompt } from '@/lib/ai/prompts/defaults';
 import { db } from '@/lib/db/client';
 
 export async function importResume(userId: string, fileText: string, providerId: string) {
   const startTime = Date.now();
   const { model, modelName } = await getProviderForUser(userId, providerId);
 
+  const system = await resolvePrompt('import-resume.system', {}, userId);
+
   const result = streamObject({
     model,
     output: 'no-schema',
-    system: IMPORT_RESUME_SYSTEM,
+    system,
     prompt: fileText,
     onFinish: async ({ usage, object: extractedObject }) => {
       const durationMs = Date.now() - startTime;
