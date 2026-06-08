@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Lock, Sparkles, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Lock, Sparkles, Copy, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,9 +32,15 @@ export function VacancyAnalysisPanel({
     configs.find((c) => c.isDefault)?.providerId ?? configs[0]?.providerId ?? ''
   );
   const [copiedKeyword, setCopiedKeyword] = useState<string | null>(null);
+  const [wantsReanalyze, setWantsReanalyze] = useState(false);
 
   const hasProvider = configs.length > 0;
   const displayAnalysis = analysis ?? (existingAnalysis as VacancyAnalysis | null) ?? null;
+
+  const handleAnalyze = (providerId: string) => {
+    setWantsReanalyze(false);
+    analyze(providerId);
+  };
 
   if (!hasProvider) {
     return (
@@ -63,7 +69,7 @@ export function VacancyAnalysisPanel({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             AI Analysis
           </h3>
-          {!displayAnalysis && !isLoading && (
+          {!isLoading && !displayAnalysis && !wantsReanalyze && (
             <div className="flex items-center gap-2">
               <Select
                 value={selectedProvider}
@@ -84,11 +90,53 @@ export function VacancyAnalysisPanel({
               </Select>
               <Button
                 size="sm"
-                onClick={() => analyze(selectedProvider)}
+                onClick={() => handleAnalyze(selectedProvider)}
                 disabled={!selectedProvider}
               >
                 <Sparkles className="h-4 w-4 mr-1.5" />
                 Analyze
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && displayAnalysis && !wantsReanalyze && (
+            <div className="flex items-center justify-end">
+              <Button size="sm" variant="outline" onClick={() => setWantsReanalyze(true)}>
+                <RefreshCw className="h-4 w-4 mr-1.5" />
+                Re-Analyze
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && wantsReanalyze && (
+            <div className="flex items-center gap-2">
+              <Select
+                value={selectedProvider}
+                onValueChange={(v) => {
+                  if (v) setSelectedProvider(v);
+                }}
+              >
+                <SelectTrigger className="h-8 w-40 text-xs">
+                  <SelectValue placeholder="Provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {configs.map((c) => (
+                    <SelectItem key={c.providerId} value={c.providerId}>
+                      {PROVIDER_REGISTRY.find((p) => p.id === c.providerId)?.name ?? c.providerId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                onClick={() => handleAnalyze(selectedProvider)}
+                disabled={!selectedProvider}
+              >
+                <Sparkles className="h-4 w-4 mr-1.5" />
+                Analyze
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setWantsReanalyze(false)}>
+                Cancel
               </Button>
             </div>
           )}
