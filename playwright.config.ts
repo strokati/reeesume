@@ -18,4 +18,5 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  globalTeardown: require.resolve('./e2e/global-teardown'),
 });
