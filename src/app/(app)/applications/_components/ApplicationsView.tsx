@@ -1,6 +1,5 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { Briefcase } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -16,12 +15,7 @@ export function ApplicationsView({
   initialData: ApplicationWithVacancy[];
   resumes: MasterResumeSummary[];
 }) {
-  const { data: applications } = useQuery({
-    queryKey: ['applications'],
-    queryFn: () => initialData,
-    initialData,
-    staleTime: Infinity,
-  });
+  const applications = initialData;
 
   return (
     <div className="space-y-6">
