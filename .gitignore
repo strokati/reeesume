@@ -49,3 +49,7 @@ next-env.d.ts
 
 # Docker volumes (if mapped locally)
 postgres_data/
+
+# Playwright
+playwright-report/
+test-results/
