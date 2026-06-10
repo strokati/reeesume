@@ -9,6 +9,7 @@ export const ContactInfoSchema = z.object({
   linkedin: z.string().optional(),
   github: z.string().optional(),
   website: z.string().optional(),
+  photoUrl: z.string().optional(),
 });
 
 // Work Company

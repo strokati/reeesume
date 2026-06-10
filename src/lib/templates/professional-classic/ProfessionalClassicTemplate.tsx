@@ -47,6 +47,20 @@ export function ProfessionalClassicTemplate({ data }: TemplateProps) {
           boxSizing: 'border-box' as const,
         }}
       >
+        {contactInfo.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={contactInfo.photoUrl}
+            alt=""
+            style={{
+              width: '80px',
+              height: '100px',
+              objectFit: 'cover',
+              borderRadius: '4px',
+              marginBottom: '8pt',
+            }}
+          />
+        )}
         <h1 style={{ fontSize: '16pt', fontWeight: 700, color: NAVY, margin: '0 0 2pt 0' }}>
           {contactInfo.name}
         </h1>

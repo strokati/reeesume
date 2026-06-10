@@ -42,21 +42,40 @@ export function ModernMinimalTemplate({ data }: TemplateProps) {
         boxDecorationBreak: 'clone' as const,
       }}
     >
-      {/* Name */}
-      {contactInfo.name && (
-        <h1
-          style={{
-            fontSize: '26pt',
-            fontWeight: 300,
-            margin: '0 0 4pt 0',
-            letterSpacing: '1pt',
-            paddingBottom: '6pt',
-            borderBottom: `2px solid ${accent}`,
-          }}
-        >
-          {contactInfo.name}
-        </h1>
-      )}
+      {/* Name + Photo */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ flex: 1 }}>
+          {contactInfo.name && (
+            <h1
+              style={{
+                fontSize: '26pt',
+                fontWeight: 300,
+                margin: '0 0 4pt 0',
+                letterSpacing: '1pt',
+                paddingBottom: '6pt',
+                borderBottom: `2px solid ${accent}`,
+              }}
+            >
+              {contactInfo.name}
+            </h1>
+          )}
+        </div>
+        {contactInfo.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={contactInfo.photoUrl}
+            alt=""
+            style={{
+              width: '70px',
+              height: '70px',
+              objectFit: 'cover',
+              borderRadius: '50%',
+              marginLeft: '12pt',
+              flexShrink: 0,
+            }}
+          />
+        )}
+      </div>
 
       {/* Target title */}
       {targetTitle && (

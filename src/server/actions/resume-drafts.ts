@@ -33,6 +33,7 @@ async function buildInitialContent(
           linkedin: (contactInfo.linkedin as string) || undefined,
           github: (contactInfo.github as string) || undefined,
           website: (contactInfo.website as string) || undefined,
+          photoUrl: (contactInfo.photoUrl as string) || undefined,
         }
       : undefined,
     targetTitle: full.targetTitle ?? undefined,

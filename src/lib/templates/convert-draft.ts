@@ -13,6 +13,7 @@ export function convertDraftToResumeData(draftContent: ResumeDraftContent): Resu
     linkedin: content.contactInfo?.linkedin,
     github: content.contactInfo?.github,
     website: content.contactInfo?.website,
+    photoUrl: content.contactInfo?.photoUrl,
   };
 
   const workExperience: WorkExperienceItem[] = (content.workExperience ?? []).map((role) => ({
