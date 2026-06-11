@@ -1,44 +1,50 @@
 {
-  "includeCoAuthoredBy": false,
-  "gitAttribution": false,
   "permissions": {
     "allow": [
-      "Npm run *",
-      "Npm install *",
-      "Npm install",
-      "Npx prisma generate",
-      "Npx prisma migrate dev*",
-      "Npx prisma studio",
-      "Npx prisma db seed",
-      "Npx prisma db push",
-      "Npx shadcn*",
-      "Npx create-next-app*",
-      "Docker compose up*",
-      "Docker compose down*",
-      "Docker compose logs*",
-      "Docker compose build*",
-      "Docker compose -f*",
-      "Git add *",
-      "Git commit *",
-      "Git status",
-      "Git diff *",
-      "Git log *",
-      "Git branch *",
-      "Git checkout *",
-      "Git stash *",
-      "Mkdir -p *",
-      "Cp *",
-      "Mv *"
-    ],
-    "deny": [
-      "Git push *",
-      "Git push",
-      "Git reset --hard *",
-      "Git reset --hard",
-      "Rm -rf *",
-      "Npx prisma migrate reset",
-      "DROP TABLE*",
-      "DROP DATABASE*"
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(npx create-next-app@latest *)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest *)",
+      "Bash(npx prisma *)",
+      "Bash(npm info *)",
+      "Bash(docker info *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npm list *)",
+      "Bash(npx tsx *)",
+      "Bash(git *)",
+      "Bash(npm test *)",
+      "Bash(node *)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
+      "Bash(gh pr *)",
+      "Bash(brew list *)",
+      "Bash(grep -E \"\\\\.\\(json|md|yaml|yml|toml|ini|conf|env\\)$|\\\\.env\\\\.|\\\\.gitignore|\\\\.npmrc|\\\\.prettier|\\\\.eslintrc|\\\\.pre-commit\")",
+      "Bash(npm audit *)",
+      "Bash(npx playwright *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(npx vitest *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -q 'prisma/schema\\.prisma$'; then npx prisma format && echo '✓ Prisma schema formatted'; fi"
+          },
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if echo \"$file\" | grep -q 'prisma/schema\\.prisma$'; then npx prisma generate && echo '✓ Prisma client regenerated'; fi"
+          }
+        ]
+      }
     ]
   }
 }

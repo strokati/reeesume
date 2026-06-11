@@ -32,6 +32,9 @@ jobs:
       - name: Security audit
         run: npm audit --audit-level=high
 
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
       - name: Generate Prisma client
         run: npx prisma generate
 
@@ -49,3 +52,6 @@ jobs:
           NEXTAUTH_SECRET: ci-placeholder-secret-not-used-in-production
           NEXTAUTH_URL: http://localhost:3000
           AUTH_MODE: none
+
+      - name: Test
+        run: npm test --if-present
