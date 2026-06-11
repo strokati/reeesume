@@ -110,6 +110,7 @@ export interface ResumeDraftContent {
     linkedin?: string;
     github?: string;
     website?: string;
+    photoUrl?: string;
   };
   targetTitle?: string;
   summary?: string;

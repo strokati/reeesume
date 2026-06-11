@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -8,6 +8,7 @@ import { updateContactInfo } from '@/server/actions/master-resume';
 import { ContactInfoSchema, type ContactInfoInput } from '@/lib/validations/master-resume';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PhotoUpload } from '@/components/master-resume/PhotoUpload';
 
 const fields: { name: keyof ContactInfoInput; label: string; type?: string }[] = [
   { name: 'name', label: 'Full Name' },
@@ -27,6 +28,7 @@ export function ContactInfoForm({
   defaultValues?: ContactInfoInput;
 }) {
   const [, startTransition] = useTransition();
+  const [photoUrl, setPhotoUrl] = useState(defaultValues?.photoUrl);
 
   const form = useForm<ContactInfoInput>({
     resolver: zodResolver(ContactInfoSchema),
@@ -36,7 +38,7 @@ export function ContactInfoForm({
   function onSubmit(data: ContactInfoInput) {
     startTransition(async () => {
       try {
-        await updateContactInfo(resumeId, data);
+        await updateContactInfo(resumeId, { ...data, photoUrl });
         toast.success('Contact info saved');
       } catch {
         toast.error('Failed to save contact info');
@@ -46,6 +48,7 @@ export function ContactInfoForm({
 
   return (
     <form id="contact-info-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <PhotoUpload value={photoUrl} onChange={(dataUrl) => setPhotoUrl(dataUrl)} />
       <div className="grid gap-4 sm:grid-cols-2">
         {fields.map(({ name, label, type }) => (
           <div key={name} className="space-y-1.5">
