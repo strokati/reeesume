@@ -16,6 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    env:
+      # Fake values — CI never connects to a real database
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      NEXTAUTH_SECRET: ci-placeholder-secret-not-used-in-production
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_MODE: none
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,12 +53,6 @@ jobs:
 
       - name: Build
         run: npm run build
-        env:
-          # Fake values — build verifies compilation only, no DB connection in CI
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          NEXTAUTH_SECRET: ci-placeholder-secret-not-used-in-production
-          NEXTAUTH_URL: http://localhost:3000
-          AUTH_MODE: none
 
       - name: Test
         run: npm test --if-present
