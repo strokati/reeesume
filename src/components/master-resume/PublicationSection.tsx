@@ -18,7 +18,7 @@ import { PublicationDialog } from './PublicationDialog';
 import { reorderPublications } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { Publication } from '@prisma/client';
+import type { Publication } from '@/generated/prisma/client';
 
 function SortablePublicationCard({
   publication,

@@ -50,7 +50,7 @@ import {
 import { useCoverLetterGeneration } from '@/hooks/use-cover-letter-generation';
 import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
 import type { ApplicationDetail } from '@/types/applications';
-import type { CoverLetterDraft } from '@prisma/client';
+import type { CoverLetterDraft } from '@/generated/prisma/client';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 

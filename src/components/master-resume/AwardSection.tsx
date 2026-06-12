@@ -18,7 +18,7 @@ import { AwardDialog } from './AwardDialog';
 import { reorderAwards } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { Award } from '@prisma/client';
+import type { Award } from '@/generated/prisma/client';
 
 function SortableAwardCard({ award, resumeId }: { award: Award; resumeId: string }) {
   const {

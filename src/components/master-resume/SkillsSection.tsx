@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Skill } from '@prisma/client';
+import type { Skill } from '@/generated/prisma/client';
 
 function SortableSkillBadge({ skill }: { skill: Skill }) {
   const [editing, setEditing] = useState(false);

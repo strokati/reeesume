@@ -14,7 +14,7 @@ import {
   duplicateCoverLetterDraft,
 } from '@/server/actions/cover-letters';
 import { toast } from 'sonner';
-import type { CoverLetterDraft } from '@prisma/client';
+import type { CoverLetterDraft } from '@/generated/prisma/client';
 
 export function CoverLetterDraftSheet({
   open,

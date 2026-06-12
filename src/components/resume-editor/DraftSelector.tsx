@@ -18,7 +18,7 @@ import {
   setActiveDraft,
 } from '@/server/actions/resume-drafts';
 import { toast } from 'sonner';
-import type { ResumeDraft } from '@prisma/client';
+import type { ResumeDraft } from '@/generated/prisma/client';
 
 export function DraftSelector({
   applicationId,

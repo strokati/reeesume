@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { deletePublication } from '@/server/actions/master-resume';
 import { PublicationDialog } from './PublicationDialog';
 import { Pencil, Trash2, GripVertical, ExternalLink } from 'lucide-react';
-import type { Publication } from '@prisma/client';
+import type { Publication } from '@/generated/prisma/client';
 
 export function PublicationCard({
   publication,

@@ -18,7 +18,7 @@ import { EducationDialog } from './EducationDialog';
 import { reorderEducation } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { Education } from '@prisma/client';
+import type { Education } from '@/generated/prisma/client';
 
 function SortableEducationCard({
   education,

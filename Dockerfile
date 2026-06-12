@@ -56,6 +56,7 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Next.js standalone output

@@ -27,7 +27,7 @@ import type {
   Project,
   VolunteeringRole,
   Publication,
-} from '@prisma/client';
+} from '@/generated/prisma/client';
 
 const LANGUAGE_LABELS: Record<string, string> = {
   en: 'English',

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { deleteAward } from '@/server/actions/master-resume';
 import { AwardDialog } from './AwardDialog';
 import { Pencil, Trash2, GripVertical } from 'lucide-react';
-import type { Award } from '@prisma/client';
+import type { Award } from '@/generated/prisma/client';
 
 export function AwardCard({
   award,

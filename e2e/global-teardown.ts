@@ -1,6 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 export default async function globalTeardown() {
   console.log('\n🧹 Cleaning up E2E test data...');

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createEducation, updateEducation } from '@/server/actions/master-resume';
 import { CreateEducationSchema, type CreateEducationInput } from '@/lib/validations/master-resume';
-import type { Education } from '@prisma/client';
+import type { Education } from '@/generated/prisma/client';
 import { X, Plus } from 'lucide-react';
 
 function ActivitiesEditor({
