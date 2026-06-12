@@ -1,0 +1,26 @@
+# Aider configuration for MasterResume
+# https://aider.chat/docs/config/aider_conf.html
+
+# Model to use
+model: anthropic/claude-sonnet-4-20250514
+
+# Map project files for better context
+map-tokens: 2048
+
+# Auto-commits after each change
+auto-commits: false
+
+# Lint command to run after changes
+lint-cmd: npm run lint
+
+# Run tests after changes
+test-cmd: npm run type-check
+
+# File patterns to watch for changes
+file-patterns:
+  - 'src/**/*.tsx'
+  - 'src/**/*.ts'
+  - 'prisma/schema.prisma'
+
+# Show git diff before committing
+git-diff: true

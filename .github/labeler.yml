@@ -1,0 +1,52 @@
+# Path-based auto-labeling for PRs
+# Used by actions/labeler (.github/workflows/labeler.yml)
+
+ai:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/lib/ai/**
+          - src/app/api/ai/**
+          - src/hooks/use-*ai*
+          - src/components/ai/**
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - prisma/**
+          - src/lib/db/**
+          - src/server/queries/**
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/components/**
+          - src/app/**/*.tsx
+          - src/hooks/**
+          - tailwind.config.*
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/server/**
+          - src/app/api/**
+          - src/lib/auth/**
+
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file:
+          - Dockerfile*
+          - docker-compose*.yml
+          - .github/workflows/**
+          - nginx/*
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - CLAUDE.md
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json

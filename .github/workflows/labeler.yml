@@ -1,0 +1,22 @@
+name: PR Auto-label
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    name: Label by changed paths
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Label PR
+        uses: actions/labeler@v5
+        with:
+          sync-labels: true
+          configuration-path: .github/labeler.yml
