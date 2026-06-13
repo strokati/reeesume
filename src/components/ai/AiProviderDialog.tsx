@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select';
 import { upsertAiProviderConfig, testAiConnection } from '@/server/actions/settings';
 import { UpsertAiProviderSchema, type UpsertAiProviderInput } from '@/lib/validations/settings';
-import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
+import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 
 export function AiProviderDialog({
   providerId,

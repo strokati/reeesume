@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useResumeSuggestions } from '@/hooks/use-resume-suggestions';
-import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
+import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 import type { ResumeSuggestions } from '@/lib/ai/prompts/resume-suggestions';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };

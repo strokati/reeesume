@@ -12,6 +12,7 @@ import {
   deleteResumeDraft,
   setActiveDraft,
   duplicateDraft,
+  fetchResumeDrafts,
 } from '@/server/actions/resume-drafts';
 import { toast } from 'sonner';
 import type { ResumeDraft } from '@/generated/prisma/client';
@@ -47,8 +48,7 @@ export function DraftManagerSheet({
     startTransition(async () => {
       try {
         const draftId = await createResumeDraft(applicationId, '');
-        const { getResumeDrafts } = await import('@/server/queries/resume-drafts');
-        const updated = await getResumeDrafts(applicationId);
+        const updated = await fetchResumeDrafts(applicationId);
         onUpdate(updated, draftId);
         toast.success('New draft created');
       } catch {
@@ -73,8 +73,7 @@ export function DraftManagerSheet({
     startTransition(async () => {
       try {
         await duplicateDraft(id);
-        const { getResumeDrafts } = await import('@/server/queries/resume-drafts');
-        const updated = await getResumeDrafts(applicationId);
+        const updated = await fetchResumeDrafts(applicationId);
         onUpdate(updated);
         toast.success('Draft duplicated');
       } catch {
@@ -91,8 +90,7 @@ export function DraftManagerSheet({
     startTransition(async () => {
       try {
         await deleteResumeDraft(id);
-        const { getResumeDrafts } = await import('@/server/queries/resume-drafts');
-        const updated = await getResumeDrafts(applicationId);
+        const updated = await fetchResumeDrafts(applicationId);
         const newActive = id === activeDraftId ? updated[0]?.id : undefined;
         onUpdate(updated, newActive);
         toast.success('Draft deleted');

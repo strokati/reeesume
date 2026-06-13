@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AiStatusBadge } from '@/components/ai/AiStatusBadge';
 import { AiProviderDialog } from '@/components/ai/AiProviderDialog';
 import { deleteAiProviderConfig, setDefaultAiProvider } from '@/server/actions/settings';
-import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
+import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 
 type SavedConfig = {
   providerId: string;
