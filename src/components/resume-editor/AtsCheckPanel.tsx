@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAtsCheck } from '@/hooks/use-ats-check';
-import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
+import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 import type { AtsCheckResult } from '@/lib/ai/prompts/ats-check';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };

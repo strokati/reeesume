@@ -5,7 +5,7 @@ import { Sparkles, ShieldCheck, FileText } from 'lucide-react';
 import { SuggestionsPanel } from './SuggestionsPanel';
 import { AtsCheckPanel } from './AtsCheckPanel';
 import type { ApplicationDetail } from '@/types/applications';
-import type { ResumeDraft } from '@prisma/client';
+import type { ResumeDraft } from '@/generated/prisma/client';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 type Tab = 'suggestions' | 'ats' | 'job';

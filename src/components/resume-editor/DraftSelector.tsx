@@ -16,9 +16,10 @@ import {
   renameResumeDraft,
   deleteResumeDraft,
   setActiveDraft,
+  fetchResumeDrafts,
 } from '@/server/actions/resume-drafts';
 import { toast } from 'sonner';
-import type { ResumeDraft } from '@prisma/client';
+import type { ResumeDraft } from '@/generated/prisma/client';
 
 export function DraftSelector({
   applicationId,
@@ -41,9 +42,7 @@ export function DraftSelector({
     startTransition(async () => {
       try {
         const draftId = await createResumeDraft(applicationId, '');
-        // Refetch by updating local state
-        const { getResumeDrafts } = await import('@/server/queries/resume-drafts');
-        const updated = await getResumeDrafts(applicationId);
+        const updated = await fetchResumeDrafts(applicationId);
         onDraftsUpdate(updated);
         const newDraft = updated.find((d) => d.id === draftId);
         if (newDraft) onSwitch(newDraft);
@@ -94,8 +93,7 @@ export function DraftSelector({
     startTransition(async () => {
       try {
         await deleteResumeDraft(id);
-        const { getResumeDrafts } = await import('@/server/queries/resume-drafts');
-        const updated = await getResumeDrafts(applicationId);
+        const updated = await fetchResumeDrafts(applicationId);
         onDraftsUpdate(updated);
         if (id === activeDraft.id && updated.length > 0) {
           onSwitch(updated[0]);

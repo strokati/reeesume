@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAnalyzeVacancy, type VacancyAnalysis } from '@/hooks/use-analyze-vacancy';
-import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
+import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 

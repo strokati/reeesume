@@ -13,7 +13,7 @@ import {
   CreateCertificationSchema,
   type CreateCertificationInput,
 } from '@/lib/validations/master-resume';
-import type { Certification } from '@prisma/client';
+import type { Certification } from '@/generated/prisma/client';
 
 function CertificationDialogForm({
   resumeId,

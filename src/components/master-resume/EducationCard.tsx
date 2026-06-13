@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { deleteEducation } from '@/server/actions/master-resume';
 import { EducationDialog } from './EducationDialog';
 import { Pencil, Trash2, GripVertical } from 'lucide-react';
-import type { Education } from '@prisma/client';
+import type { Education } from '@/generated/prisma/client';
 
 export function EducationCard({
   education,

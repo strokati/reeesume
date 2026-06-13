@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { deleteVolunteeringRole } from '@/server/actions/master-resume';
 import { VolunteeringDialog } from './VolunteeringDialog';
 import { Pencil, Trash2, GripVertical } from 'lucide-react';
-import type { VolunteeringRole } from '@prisma/client';
+import type { VolunteeringRole } from '@/generated/prisma/client';
 
 export function VolunteeringCard({
   volunteeringRole,

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
 import { getFullMasterResume } from '@/server/queries/master-resume';
+import { getResumeDrafts } from '@/server/queries/resume-drafts';
 import type { ResumeDraftContent } from '@/types/resume-draft';
 
 async function requireAuth(): Promise<string> {
@@ -336,4 +337,9 @@ export async function syncWorkExperienceFromMaster(draftId: string): Promise<Res
 
   revalidatePath(`/applications/${draft.applicationId}/resume`);
   return updated;
+}
+
+export async function fetchResumeDrafts(applicationId: string): ReturnType<typeof getResumeDrafts> {
+  await requireAuth();
+  return getResumeDrafts(applicationId);
 }

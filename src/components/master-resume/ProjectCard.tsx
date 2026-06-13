@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { deleteProject } from '@/server/actions/master-resume';
 import { ProjectDialog } from './ProjectDialog';
 import { Pencil, Trash2, GripVertical, ExternalLink } from 'lucide-react';
-import type { Project } from '@prisma/client';
+import type { Project } from '@/generated/prisma/client';
 
 export function ProjectCard({
   project,

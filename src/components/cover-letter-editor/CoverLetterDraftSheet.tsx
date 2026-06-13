@@ -12,9 +12,10 @@ import {
   deleteCoverLetterDraft,
   setActiveCoverLetterDraft,
   duplicateCoverLetterDraft,
+  listCoverLetterDrafts,
 } from '@/server/actions/cover-letters';
 import { toast } from 'sonner';
-import type { CoverLetterDraft } from '@prisma/client';
+import type { CoverLetterDraft } from '@/generated/prisma/client';
 
 export function CoverLetterDraftSheet({
   open,
@@ -39,8 +40,7 @@ export function CoverLetterDraftSheet({
     startTransition(async () => {
       try {
         const draftId = await createCoverLetterDraft(applicationId, '');
-        const { getCoverLetterDrafts } = await import('@/server/queries/cover-letters');
-        const updated = await getCoverLetterDrafts(applicationId);
+        const updated = await listCoverLetterDrafts(applicationId);
         onUpdate(updated, draftId);
         toast.success('New draft created');
       } catch {
@@ -64,8 +64,7 @@ export function CoverLetterDraftSheet({
     startTransition(async () => {
       try {
         await duplicateCoverLetterDraft(id);
-        const { getCoverLetterDrafts } = await import('@/server/queries/cover-letters');
-        const updated = await getCoverLetterDrafts(applicationId);
+        const updated = await listCoverLetterDrafts(applicationId);
         onUpdate(updated);
         toast.success('Draft duplicated');
       } catch {
@@ -82,8 +81,7 @@ export function CoverLetterDraftSheet({
     startTransition(async () => {
       try {
         await deleteCoverLetterDraft(id);
-        const { getCoverLetterDrafts } = await import('@/server/queries/cover-letters');
-        const updated = await getCoverLetterDrafts(applicationId);
+        const updated = await listCoverLetterDrafts(applicationId);
         const newActive = id === activeDraftId ? updated[0]?.id : undefined;
         onUpdate(updated, newActive);
         toast.success('Draft deleted');

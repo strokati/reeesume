@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RephrasePopover } from './RephrasePopover';
 import { updateResumeDraftContent } from '@/server/actions/resume-drafts';
-import type { ResumeDraft } from '@prisma/client';
+import type { ResumeDraft } from '@/generated/prisma/client';
 import type {
   ResumeDraftContent,
   DraftWorkRole,

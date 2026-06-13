@@ -18,7 +18,7 @@ import { ProjectDialog } from './ProjectDialog';
 import { reorderProjects } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { Project } from '@prisma/client';
+import type { Project } from '@/generated/prisma/client';
 
 function SortableProjectCard({ project, resumeId }: { project: Project; resumeId: string }) {
   const {

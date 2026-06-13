@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { createAward, updateAward } from '@/server/actions/master-resume';
 import { CreateAwardSchema, type CreateAwardInput } from '@/lib/validations/master-resume';
-import type { Award } from '@prisma/client';
+import type { Award } from '@/generated/prisma/client';
 
 function AwardDialogForm({
   resumeId,

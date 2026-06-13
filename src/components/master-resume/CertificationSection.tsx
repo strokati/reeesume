@@ -18,7 +18,7 @@ import { CertificationDialog } from './CertificationDialog';
 import { reorderCertifications } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { Certification } from '@prisma/client';
+import type { Certification } from '@/generated/prisma/client';
 
 function SortableCertificationCard({
   certification,

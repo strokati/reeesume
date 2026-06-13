@@ -861,17 +861,17 @@ export async function applyImportedResume(
                 data: r.projects
                   .filter((p) => p.name)
                   .map((p, pi) => ({
-                  roleId: role.id,
-                  name: p.name!,
-                  startDate: p.startDate ?? undefined,
-                  endDate: p.endDate ?? undefined,
-                  description: p.description ?? undefined,
-                  contribution: p.contribution ?? undefined,
-                  responsibilities: p.responsibilities ?? undefined,
-                  technologies: p.technologies ?? undefined,
-                  outcome: p.outcome ?? undefined,
-                  order: pi,
-                })),
+                    roleId: role.id,
+                    name: p.name!,
+                    startDate: p.startDate ?? undefined,
+                    endDate: p.endDate ?? undefined,
+                    description: p.description ?? undefined,
+                    contribution: p.contribution ?? undefined,
+                    responsibilities: p.responsibilities ?? undefined,
+                    technologies: p.technologies ?? undefined,
+                    outcome: p.outcome ?? undefined,
+                    order: pi,
+                  })),
               });
             }
           }
@@ -885,18 +885,18 @@ export async function applyImportedResume(
         data: importedData.educations
           .filter((e) => e.institution)
           .map((e, i) => ({
-          resumeId,
-          institution: e.institution!,
-          degree: e.degree ?? undefined,
-          field: e.field ?? undefined,
-          location: e.location ?? undefined,
-          startDate: e.startDate ?? undefined,
-          endDate: e.endDate ?? undefined,
-          gpa: e.gpa ?? undefined,
-          honors: e.honors ?? undefined,
-          activities: e.activities ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            institution: e.institution!,
+            degree: e.degree ?? undefined,
+            field: e.field ?? undefined,
+            location: e.location ?? undefined,
+            startDate: e.startDate ?? undefined,
+            endDate: e.endDate ?? undefined,
+            gpa: e.gpa ?? undefined,
+            honors: e.honors ?? undefined,
+            activities: e.activities ?? undefined,
+            order: count + i,
+          })),
       });
     }
 
@@ -906,12 +906,12 @@ export async function applyImportedResume(
         data: importedData.skills
           .filter((s) => s.name)
           .map((s, i) => ({
-          resumeId,
-          name: s.name!,
-          category: s.category ?? undefined,
-          level: s.level ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            name: s.name!,
+            category: s.category ?? undefined,
+            level: s.level ?? undefined,
+            order: count + i,
+          })),
       });
     }
 
@@ -921,15 +921,15 @@ export async function applyImportedResume(
         data: importedData.certifications
           .filter((c) => c.name)
           .map((c, i) => ({
-          resumeId,
-          name: c.name!,
-          issuer: c.issuer ?? undefined,
-          issueDate: c.issueDate ?? undefined,
-          expiryDate: c.expiryDate ?? undefined,
-          credentialId: c.credentialId ?? undefined,
-          url: c.url ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            name: c.name!,
+            issuer: c.issuer ?? undefined,
+            issueDate: c.issueDate ?? undefined,
+            expiryDate: c.expiryDate ?? undefined,
+            credentialId: c.credentialId ?? undefined,
+            url: c.url ?? undefined,
+            order: count + i,
+          })),
       });
     }
 
@@ -939,13 +939,13 @@ export async function applyImportedResume(
         data: importedData.awards
           .filter((a) => a.title)
           .map((a, i) => ({
-          resumeId,
-          title: a.title!,
-          issuer: a.issuer ?? undefined,
-          date: a.date ?? undefined,
-          description: a.description ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            title: a.title!,
+            issuer: a.issuer ?? undefined,
+            date: a.date ?? undefined,
+            description: a.description ?? undefined,
+            order: count + i,
+          })),
       });
     }
 
@@ -955,17 +955,17 @@ export async function applyImportedResume(
         data: importedData.projects
           .filter((p) => p.name)
           .map((p, i) => ({
-          resumeId,
-          name: p.name!,
-          description: p.description ?? undefined,
-          role: p.role ?? undefined,
-          startDate: p.startDate ?? undefined,
-          endDate: p.endDate ?? undefined,
-          technologies: p.technologies ?? undefined,
-          url: p.url ?? undefined,
-          repoUrl: p.repoUrl ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            name: p.name!,
+            description: p.description ?? undefined,
+            role: p.role ?? undefined,
+            startDate: p.startDate ?? undefined,
+            endDate: p.endDate ?? undefined,
+            technologies: p.technologies ?? undefined,
+            url: p.url ?? undefined,
+            repoUrl: p.repoUrl ?? undefined,
+            order: count + i,
+          })),
       });
     }
 
@@ -975,15 +975,15 @@ export async function applyImportedResume(
         data: importedData.volunteeringRoles
           .filter((v) => v.organization)
           .map((v, i) => ({
-          resumeId,
-          organization: v.organization!,
-          role: v.role ?? undefined,
-          location: v.location ?? undefined,
-          startDate: v.startDate ?? undefined,
-          endDate: v.endDate ?? undefined,
-          responsibilities: v.responsibilities ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            organization: v.organization!,
+            role: v.role ?? undefined,
+            location: v.location ?? undefined,
+            startDate: v.startDate ?? undefined,
+            endDate: v.endDate ?? undefined,
+            responsibilities: v.responsibilities ?? undefined,
+            order: count + i,
+          })),
       });
     }
 
@@ -993,16 +993,16 @@ export async function applyImportedResume(
         data: importedData.publications
           .filter((p) => p.title)
           .map((p, i) => ({
-          resumeId,
-          title: p.title!,
-          authors: p.authors ?? undefined,
-          publisher: p.publisher ?? undefined,
-          date: p.date ?? undefined,
-          url: p.url ?? undefined,
-          doi: p.doi ?? undefined,
-          description: p.description ?? undefined,
-          order: count + i,
-        })),
+            resumeId,
+            title: p.title!,
+            authors: p.authors ?? undefined,
+            publisher: p.publisher ?? undefined,
+            date: p.date ?? undefined,
+            url: p.url ?? undefined,
+            doi: p.doi ?? undefined,
+            description: p.description ?? undefined,
+            order: count + i,
+          })),
       });
     }
   });

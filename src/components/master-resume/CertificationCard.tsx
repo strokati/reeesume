@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { deleteCertification } from '@/server/actions/master-resume';
 import { CertificationDialog } from './CertificationDialog';
 import { Pencil, Trash2, GripVertical, ExternalLink } from 'lucide-react';
-import type { Certification } from '@prisma/client';
+import type { Certification } from '@/generated/prisma/client';
 
 export function CertificationCard({
   certification,

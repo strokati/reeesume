@@ -18,7 +18,7 @@ import { VolunteeringDialog } from './VolunteeringDialog';
 import { reorderVolunteeringRoles } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { VolunteeringRole } from '@prisma/client';
+import type { VolunteeringRole } from '@/generated/prisma/client';
 
 function SortableVolunteeringCard({
   role,

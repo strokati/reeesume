@@ -23,6 +23,7 @@ build/
 # Prisma
 prisma/migrations/dev.db
 prisma/migrations/dev.db-journal
+src/generated/
 
 # Debug logs
 npm-debug.log*

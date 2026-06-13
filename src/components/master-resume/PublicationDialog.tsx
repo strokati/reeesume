@@ -14,7 +14,7 @@ import {
   CreatePublicationSchema,
   type CreatePublicationInput,
 } from '@/lib/validations/master-resume';
-import type { Publication } from '@prisma/client';
+import type { Publication } from '@/generated/prisma/client';
 
 function PublicationDialogForm({
   resumeId,

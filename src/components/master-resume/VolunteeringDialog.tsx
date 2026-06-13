@@ -13,7 +13,7 @@ import {
   CreateVolunteeringRoleSchema,
   type CreateVolunteeringRoleInput,
 } from '@/lib/validations/master-resume';
-import type { VolunteeringRole } from '@prisma/client';
+import type { VolunteeringRole } from '@/generated/prisma/client';
 import { X, Plus } from 'lucide-react';
 
 function VolunteeringDialogForm({

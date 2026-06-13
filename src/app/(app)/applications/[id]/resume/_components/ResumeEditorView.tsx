@@ -17,7 +17,7 @@ import { TemplatePicker } from '@/components/resume-editor/TemplatePicker';
 import { ResumeEditorLeft } from '@/components/resume-editor/ResumeEditorLeft';
 import { RightPanelTabs } from '@/components/resume-editor/RightPanelTabs';
 import type { ApplicationDetail } from '@/types/applications';
-import type { ResumeDraft } from '@prisma/client';
+import type { ResumeDraft } from '@/generated/prisma/client';
 import { useExport } from '@/hooks/use-export';
 import { toast } from 'sonner';
 import { syncWorkExperienceFromMaster } from '@/server/actions/resume-drafts';

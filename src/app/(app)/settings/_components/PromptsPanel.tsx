@@ -13,7 +13,7 @@ import {
   getAllPromptTemplates,
   getPromptGroups,
   type PromptTemplate,
-} from '@/lib/ai/prompts/defaults';
+} from '@/lib/ai/prompts/templates';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 

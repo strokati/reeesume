@@ -21,7 +21,7 @@ import {
 import { useImportResume } from '@/hooks/use-import-resume';
 import { applyImportedResume } from '@/server/actions/master-resume';
 import { getSectionCounts, type ImportedResumeData } from '@/lib/ai/prompts/import-resume';
-import { PROVIDER_REGISTRY } from '@/lib/ai/providers';
+import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 import { toast } from 'sonner';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };

@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { createProject, updateProject } from '@/server/actions/master-resume';
 import { CreateProjectSchema, type CreateProjectInput } from '@/lib/validations/master-resume';
-import type { Project } from '@prisma/client';
+import type { Project } from '@/generated/prisma/client';
 import { X } from 'lucide-react';
 
 function ProjectDialogForm({
