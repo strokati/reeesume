@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RephrasePopover } from './RephrasePopover';
-import { updateResumeDraftContent } from '@/server/actions/resume-drafts';
-import type { ResumeDraft } from '@/generated/prisma/client';
 import type {
   ResumeDraftContent,
   DraftWorkRole,
@@ -35,39 +32,15 @@ function SourceBadge({ source }: { source: ContentSource }) {
   );
 }
 
-export function ResumeEditorLeft({ draft }: { draft: ResumeDraft }) {
-  const content = (draft.content as unknown as ResumeDraftContent) ?? {
-    workExperience: [],
-    education: [],
-    skills: [],
-    certifications: [],
-    awards: [],
-    projects: [],
-    volunteering: [],
-    publications: [],
-  };
-  const [localContent, setLocalContent] = useState<ResumeDraftContent>(content);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const debouncedSave = useCallback(
-    (updated: ResumeDraftContent) => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = setTimeout(() => {
-        updateResumeDraftContent(draft.id, updated);
-      }, 1000);
-    },
-    [draft.id]
-  );
-
-  function updateContent(updater: (prev: ResumeDraftContent) => ResumeDraftContent) {
-    setLocalContent((prev) => {
-      const next = updater(prev);
-      debouncedSave(next);
-      return next;
-    });
-  }
-
-  const defaultProvider = ''; // Will be passed from parent in future wiring
+export function ResumeEditorLeft({
+  content,
+  updateContent,
+}: {
+  content: ResumeDraftContent;
+  updateContent: (updater: (prev: ResumeDraftContent) => ResumeDraftContent) => void;
+}) {
+  const localContent = content;
+  const defaultProvider = '';
 
   return (
     <div className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto pr-1">

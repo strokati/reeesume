@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   RefreshCw,
+  ArrowLeft,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import {
 import { useResumeSuggestions } from '@/hooks/use-resume-suggestions';
 import { PROVIDER_REGISTRY } from '@/lib/ai/provider-registry';
 import type { ResumeSuggestions } from '@/lib/ai/prompts/resume-suggestions';
+import { toast } from 'sonner';
 
 type Config = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 
@@ -31,10 +33,16 @@ export function SuggestionsPanel({
   applicationId,
   configs,
   existingSuggestions,
+  applySummary,
+  applyWorkBullets,
+  draftRoleIds,
 }: {
   applicationId: string;
   configs: Config[];
   existingSuggestions: unknown;
+  applySummary?: (text: string) => void;
+  applyWorkBullets?: (roleId: string, bullets: string[]) => void;
+  draftRoleIds?: string[];
 }) {
   const { getSuggestions, suggestions, isLoading, error } = useResumeSuggestions(applicationId);
   const [selectedProvider, setSelectedProvider] = useState<string>(
@@ -158,7 +166,12 @@ export function SuggestionsPanel({
         {isLoading && <SuggestionsSkeleton />}
 
         {displaySuggestions && !isLoading && (
-          <SuggestionsContent suggestions={displaySuggestions} />
+          <SuggestionsContent
+            suggestions={displaySuggestions}
+            applySummary={applySummary}
+            applyWorkBullets={applyWorkBullets}
+            draftRoleIds={draftRoleIds ?? []}
+          />
         )}
       </CardContent>
     </Card>
@@ -182,15 +195,54 @@ function SuggestionsSkeleton() {
   );
 }
 
-function SuggestionsContent({ suggestions }: { suggestions: ResumeSuggestions }) {
+function SuggestionsContent({
+  suggestions,
+  applySummary,
+  applyWorkBullets,
+  draftRoleIds,
+}: {
+  suggestions: ResumeSuggestions;
+  applySummary?: (text: string) => void;
+  applyWorkBullets?: (roleId: string, bullets: string[]) => void;
+  draftRoleIds: string[];
+}) {
+  const [summaryApplied, setSummaryApplied] = useState(false);
+
   return (
     <div className="space-y-4">
       {/* Summary suggestion */}
       {suggestions.summary && (
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Suggested Summary
-          </h4>
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Suggested Summary
+            </h4>
+            {applySummary && (
+              <Button
+                size="sm"
+                variant={summaryApplied ? 'ghost' : 'outline'}
+                disabled={summaryApplied}
+                onClick={() => {
+                  applySummary(suggestions.summary.suggestion);
+                  setSummaryApplied(true);
+                  toast.success('Summary applied to draft');
+                }}
+                className="h-7 px-2 text-xs"
+              >
+                {summaryApplied ? (
+                  <>
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Applied
+                  </>
+                ) : (
+                  <>
+                    <ArrowLeft className="h-3 w-3 mr-1" />
+                    Apply to draft
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
           <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-3 dark:border-orange-800 dark:bg-orange-900/10">
             <p className="text-sm leading-relaxed">{suggestions.summary.suggestion}</p>
             <p className="text-xs text-muted-foreground italic mt-1.5">
@@ -202,7 +254,11 @@ function SuggestionsContent({ suggestions }: { suggestions: ResumeSuggestions })
 
       {/* Work Experience suggestions */}
       {suggestions.workExperience?.length > 0 && (
-        <WorkSuggestions items={suggestions.workExperience} />
+        <WorkSuggestions
+          items={suggestions.workExperience}
+          applyWorkBullets={applyWorkBullets}
+          draftRoleIds={draftRoleIds}
+        />
       )}
 
       {/* Skills suggestions */}
@@ -261,8 +317,17 @@ function SuggestionsContent({ suggestions }: { suggestions: ResumeSuggestions })
   );
 }
 
-function WorkSuggestions({ items }: { items: ResumeSuggestions['workExperience'] }) {
+function WorkSuggestions({
+  items,
+  applyWorkBullets,
+  draftRoleIds,
+}: {
+  items: ResumeSuggestions['workExperience'];
+  applyWorkBullets?: (roleId: string, bullets: string[]) => void;
+  draftRoleIds: string[];
+}) {
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [appliedRoleIds, setAppliedRoleIds] = useState<Set<string>>(new Set());
 
   function toggle(i: number) {
     setExpanded((prev) => {
@@ -278,59 +343,93 @@ function WorkSuggestions({ items }: { items: ResumeSuggestions['workExperience']
       <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Work Experience
       </h4>
-      {items.map((item, i) => (
-        <div key={i} className="rounded-xl border p-3 space-y-2">
-          <button
-            type="button"
-            className="flex items-center justify-between w-full text-left"
-            onClick={() => toggle(i)}
-          >
-            <div className="flex items-center gap-2">
-              {expanded.has(i) ? (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              )}
-              <span className="text-sm font-medium">
-                {item.companyName || item.companyId.slice(0, 8) + '...'} /{' '}
-                {item.roleTitle || item.roleId.slice(0, 8) + '...'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {item.include ? (
-                <Badge className="text-[0.6rem] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                  Include
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-[0.6rem] text-muted-foreground">
-                  Skip
-                </Badge>
-              )}
-              <ScoreBar score={item.relevanceScore} />
-            </div>
-          </button>
-          {expanded.has(i) && (
-            <div className="pl-6 space-y-2">
-              <p className="text-xs text-muted-foreground italic">{item.reasoning}</p>
-              {item.suggestedBullets?.length > 0 && (
-                <div className="space-y-1">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[0.6rem] text-orange-700 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-300">
-                    AI Suggested
-                  </span>
-                  <ul className="space-y-0.5">
-                    {item.suggestedBullets.map((bullet, bi) => (
-                      <li key={bi} className="text-sm flex items-start gap-1.5">
-                        <span className="text-muted-foreground mt-0.5">•</span>
-                        {bullet}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+      {items.map((item, i) => {
+        const roleStillInDraft = draftRoleIds.includes(item.roleId);
+        const hasBullets = (item.suggestedBullets?.length ?? 0) > 0;
+        const wasApplied = appliedRoleIds.has(item.roleId);
+
+        return (
+          <div key={i} className="rounded-xl border p-3 space-y-2">
+            <button
+              type="button"
+              className="flex items-center justify-between w-full text-left"
+              onClick={() => toggle(i)}
+            >
+              <div className="flex items-center gap-2">
+                {expanded.has(i) ? (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">
+                  {item.companyName || item.companyId.slice(0, 8) + '...'} /{' '}
+                  {item.roleTitle || item.roleId.slice(0, 8) + '...'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {item.include ? (
+                  <Badge className="text-[0.6rem] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                    Include
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[0.6rem] text-muted-foreground">
+                    Skip
+                  </Badge>
+                )}
+                <ScoreBar score={item.relevanceScore} />
+              </div>
+            </button>
+            {expanded.has(i) && (
+              <div className="pl-6 space-y-2">
+                <p className="text-xs text-muted-foreground italic">{item.reasoning}</p>
+                {hasBullets && (
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[0.6rem] text-orange-700 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-300">
+                      AI Suggested
+                    </span>
+                    <ul className="space-y-0.5">
+                      {item.suggestedBullets.map((bullet, bi) => (
+                        <li key={bi} className="text-sm flex items-start gap-1.5">
+                          <span className="text-muted-foreground mt-0.5">•</span>
+                          {bullet}
+                        </li>
+                      ))}
+                    </ul>
+                    {applyWorkBullets && (
+                      <div className="pt-1">
+                        <Button
+                          size="sm"
+                          variant={wasApplied ? 'ghost' : 'outline'}
+                          disabled={wasApplied || !roleStillInDraft}
+                          title={!roleStillInDraft ? 'Role removed from draft' : undefined}
+                          onClick={() => {
+                            applyWorkBullets(item.roleId, item.suggestedBullets);
+                            setAppliedRoleIds((prev) => new Set(prev).add(item.roleId));
+                            toast.success(`Bullets appended to ${item.roleTitle}`);
+                          }}
+                          className="h-7 px-2 text-xs"
+                        >
+                          {wasApplied ? (
+                            <>
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Applied
+                            </>
+                          ) : (
+                            <>
+                              <ArrowLeft className="h-3 w-3 mr-1" />
+                              Append to draft
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
