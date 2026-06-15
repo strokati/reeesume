@@ -20,10 +20,16 @@ export function RightPanelTabs({
   application,
   draft,
   aiConfigs,
+  applySummary,
+  applyWorkBullets,
+  draftRoleIds,
 }: {
   application: ApplicationDetail;
   draft: ResumeDraft;
   aiConfigs: Config[];
+  applySummary?: (text: string) => void;
+  applyWorkBullets?: (roleId: string, bullets: string[]) => void;
+  draftRoleIds?: string[];
 }) {
   const [activeTab, setActiveTab] = useState<Tab>('suggestions');
 
@@ -58,6 +64,9 @@ export function RightPanelTabs({
             applicationId={application.id}
             configs={aiConfigs}
             existingSuggestions={application.aiSuggestions}
+            applySummary={applySummary}
+            applyWorkBullets={applyWorkBullets}
+            draftRoleIds={draftRoleIds}
           />
         )}
         {activeTab === 'ats' && (
