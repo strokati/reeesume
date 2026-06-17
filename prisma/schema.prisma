@@ -403,6 +403,7 @@ model AiProviderConfig {
   isDefault   Boolean  @default(false)
   baseUrl     String? // for ollama or custom providers
   displayName String? // for custom providers
+  apiMode     String? // null|'openai'|'anthropic' — currently only z.ai uses 'anthropic'
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

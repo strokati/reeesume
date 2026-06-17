@@ -1,4 +1,14 @@
-export const PROVIDER_REGISTRY = [
+export type ApiMode = 'openai' | 'anthropic';
+
+export type ProviderRegistryEntry = {
+  id: string;
+  name: string;
+  models: readonly string[];
+  apiModes?: readonly ApiMode[];
+  anthropicModels?: readonly string[];
+};
+
+export const PROVIDER_REGISTRY: readonly ProviderRegistryEntry[] = [
   {
     id: 'openai',
     name: 'OpenAI',
@@ -21,6 +31,8 @@ export const PROVIDER_REGISTRY = [
     id: 'zai',
     name: 'Z.ai',
     models: ['glm-5.1', 'glm-5', 'glm-5-turbo', 'glm-4.7', 'glm-4.7-flash'],
+    apiModes: ['openai', 'anthropic'],
+    anthropicModels: ['glm-4.5-air', 'glm-5.2', 'glm-5.1'],
   },
   {
     id: 'deepseek',
@@ -29,6 +41,6 @@ export const PROVIDER_REGISTRY = [
   },
   { id: 'ollama', name: 'Ollama (Local)', models: ['llama3.2', 'qwen2.5-coder', 'mistral'] },
   { id: 'custom', name: 'Custom (OpenAI-compatible)', models: [] },
-] as const;
+];
 
 export type ProviderId = (typeof PROVIDER_REGISTRY)[number]['id'];

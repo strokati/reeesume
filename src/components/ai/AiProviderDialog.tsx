@@ -32,18 +32,32 @@ export function AiProviderDialog({
   onOpenChange,
 }: {
   providerId: string;
-  existingConfig?: { model: string; baseUrl?: string | null; apiKey: string } | null;
+  existingConfig?: {
+    model: string;
+    baseUrl?: string | null;
+    apiKey: string;
+    apiMode?: string | null;
+  } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [testResult, setTestResult] = useState<{ success: boolean; error?: string } | null>(null);
   const [model, setModel] = useState(existingConfig?.model ?? '');
+  const [apiMode, setApiMode] = useState<'openai' | 'anthropic'>(
+    existingConfig?.apiMode === 'anthropic' ? 'anthropic' : 'openai'
+  );
   const [formKey, setFormKey] = useState(0);
 
   const provider = PROVIDER_REGISTRY.find((p) => p.id === providerId);
+  const supportsModes = !!provider?.apiModes && provider.apiModes.length > 1;
   const needsBaseUrl = providerId === 'ollama' || providerId === 'custom';
   const hasExistingKey = !!existingConfig?.apiKey && existingConfig.apiKey !== '';
+
+  const activeModels =
+    supportsModes && apiMode === 'anthropic'
+      ? (provider?.anthropicModels ?? [])
+      : (provider?.models ?? []);
 
   const form = useForm<Omit<UpsertAiProviderInput, 'providerId'>>({
     resolver: zodResolver(UpsertAiProviderSchema.omit({ providerId: true })),
@@ -63,6 +77,7 @@ export function AiProviderDialog({
       ...data,
       providerId,
       model: model || data.model,
+      apiMode: supportsModes ? apiMode : undefined,
     };
     if (hasExistingKey && !payload.apiKey) {
       delete payload.apiKey;
@@ -88,6 +103,7 @@ export function AiProviderDialog({
             apiKey: apiKeyValue || undefined,
             model: model,
             baseUrl: baseUrlValue || undefined,
+            apiMode: supportsModes ? apiMode : undefined,
           }
         : undefined;
     startTransition(async () => {
@@ -127,9 +143,37 @@ export function AiProviderDialog({
             )}
           </div>
 
+          {supportsModes && (
+            <div className="space-y-1.5">
+              <Label>Connection mode</Label>
+              <Select
+                value={apiMode}
+                onValueChange={(v) => {
+                  const next = (v ?? 'openai') as 'openai' | 'anthropic';
+                  setApiMode(next);
+                  setModel('');
+                  setValue('model', '');
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="openai">OpenAI-compatible (/paas/v4)</SelectItem>
+                  <SelectItem value="anthropic">Anthropic-compatible (/api/anthropic)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {apiMode === 'anthropic'
+                  ? 'Use the same key Claude Code uses. Bills against the Anthropic-compatible meter.'
+                  : 'Default. Bills against the OpenAI-compatible meter.'}
+              </p>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label>Model</Label>
-            {provider && provider.models.length > 0 ? (
+            {provider && activeModels.length > 0 ? (
               <Select
                 value={model}
                 onValueChange={(v) => {
@@ -141,7 +185,7 @@ export function AiProviderDialog({
                   <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
-                  {provider.models.map((m) => (
+                  {activeModels.map((m) => (
                     <SelectItem key={m} value={m}>
                       {m}
                     </SelectItem>

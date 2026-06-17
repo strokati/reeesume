@@ -46,4 +46,25 @@ describe('UpsertAiProviderSchema', () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it('accepts apiMode anthropic for z.ai', () => {
+    const result = UpsertAiProviderSchema.safeParse({
+      providerId: 'zai',
+      apiKey: 'key',
+      model: 'glm-4.5-air',
+      apiMode: 'anthropic',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects unknown apiMode', () => {
+    const result = UpsertAiProviderSchema.safeParse({
+      providerId: 'zai',
+      apiKey: 'key',
+      model: 'glm-4.5-air',
+      apiMode: 'invalid',
+    });
+    expect(result.success).toBe(false);
+    expect(result.error!.issues[0].path).toContain('apiMode');
+  });
 });

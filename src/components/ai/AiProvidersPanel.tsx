@@ -15,6 +15,7 @@ type SavedConfig = {
   apiKey: string;
   isDefault: boolean;
   baseUrl?: string | null;
+  apiMode?: string | null;
 };
 
 export function AiProvidersPanel({ configs }: { configs: SavedConfig[] }) {

@@ -14,10 +14,11 @@ type ProviderConfig = {
   model: string;
   baseUrl?: string | null;
   apiKey?: string;
+  apiMode?: 'openai' | 'anthropic' | null;
 };
 
 export async function getProvider(config: ProviderConfig): Promise<LanguageModel> {
-  const { providerId, model, baseUrl, apiKey } = config;
+  const { providerId, model, baseUrl, apiKey, apiMode } = config;
 
   switch (providerId) {
     case 'openai':
@@ -33,6 +34,13 @@ export async function getProvider(config: ProviderConfig): Promise<LanguageModel
     case 'xai':
       return createXai()(model);
     case 'zai':
+      if (apiMode === 'anthropic') {
+        return createAnthropic({
+          baseURL: baseUrl || 'https://api.z.ai/api/anthropic/v1',
+          apiKey: apiKey || process.env.ZAI_API_KEY,
+          headers: { 'anthropic-version': '2023-06-01' },
+        })(model);
+      }
       return createOpenAI({
         baseURL: baseUrl || 'https://api.z.ai/api/paas/v4/',
         apiKey: apiKey || process.env.ZAI_API_KEY,
@@ -88,6 +96,7 @@ export async function getProviderForUser(
     model: config.model,
     baseUrl: config.baseUrl,
     apiKey: providerId === 'zai' ? apiKey : undefined,
+    apiMode: providerId === 'zai' ? (config.apiMode as 'openai' | 'anthropic' | null) : null,
   });
 
   return { model, modelName: config.model, providerId };
