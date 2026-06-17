@@ -40,6 +40,22 @@ describe('upsertAiProviderConfig', () => {
     expect(revalidatePath).toHaveBeenCalledWith('/settings');
   });
 
+  it('persists apiMode for z.ai', async () => {
+    db.aiProviderConfig.upsert.mockResolvedValue({});
+    await upsertAiProviderConfig({
+      providerId: 'zai',
+      apiKey: 'key',
+      model: 'glm-4.5-air',
+      apiMode: 'anthropic',
+    });
+    expect(db.aiProviderConfig.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ apiMode: 'anthropic' }),
+        update: expect.objectContaining({ apiMode: 'anthropic' }),
+      })
+    );
+  });
+
   it('rejects missing providerId', async () => {
     await expect(
       upsertAiProviderConfig({ model: 'gpt-4o', apiKey: 'key' } as any)

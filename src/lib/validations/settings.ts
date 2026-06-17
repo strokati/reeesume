@@ -6,6 +6,7 @@ export const UpsertAiProviderSchema = z.object({
   model: z.string().min(1, 'Model is required'),
   baseUrl: z.string().url().optional().or(z.literal('')),
   displayName: z.string().optional(),
+  apiMode: z.enum(['openai', 'anthropic']).optional(),
 });
 
 export type UpsertAiProviderInput = z.infer<typeof UpsertAiProviderSchema>;

@@ -22,6 +22,7 @@ export async function upsertAiProviderConfig(data: UpsertAiProviderInput): Promi
     model: validated.model,
     baseUrl: validated.baseUrl || null,
     displayName: validated.displayName || null,
+    apiMode: validated.apiMode ?? null,
   };
 
   if (validated.apiKey) {
@@ -38,6 +39,7 @@ export async function upsertAiProviderConfig(data: UpsertAiProviderInput): Promi
         model: validated.model,
         baseUrl: validated.baseUrl || null,
         displayName: validated.displayName || null,
+        apiMode: validated.apiMode ?? null,
       },
       update: updateData,
     });
@@ -80,18 +82,25 @@ export async function setDefaultAiProvider(providerId: string): Promise<void> {
 
 export async function testAiConnection(
   providerId: string,
-  overrides?: { apiKey?: string; model?: string; baseUrl?: string }
+  overrides?: {
+    apiKey?: string;
+    model?: string;
+    baseUrl?: string;
+    apiMode?: 'openai' | 'anthropic';
+  }
 ): Promise<{ success: boolean; error?: string }> {
   const userId = await requireAuth();
 
   let apiKey: string;
   let model: string;
   let baseUrl: string | null = null;
+  let apiMode: 'openai' | 'anthropic' | null = null;
 
   if (overrides?.apiKey && overrides?.model) {
     apiKey = overrides.apiKey;
     model = overrides.model;
     baseUrl = overrides.baseUrl ?? null;
+    apiMode = overrides.apiMode ?? null;
   } else {
     const config = await db.aiProviderConfig.findUnique({
       where: { userId_providerId: { userId, providerId } },
@@ -103,6 +112,7 @@ export async function testAiConnection(
     apiKey = decryptApiKey(config.apiKey);
     model = config.model;
     baseUrl = config.baseUrl;
+    apiMode = (config.apiMode as 'openai' | 'anthropic' | null) ?? null;
   }
 
   const { getProvider } = await import('@/lib/ai/providers');
@@ -126,6 +136,7 @@ export async function testAiConnection(
       model,
       baseUrl,
       apiKey: providerId === 'zai' ? apiKey : undefined,
+      apiMode: providerId === 'zai' ? apiMode : null,
     });
 
     await generateText({ model: aiModel, prompt: 'Say "ok" in one word.' });
