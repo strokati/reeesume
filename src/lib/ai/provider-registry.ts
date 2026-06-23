@@ -22,7 +22,7 @@ export const PROVIDER_REGISTRY: readonly ProviderRegistryEntry[] = [
   {
     id: 'google',
     name: 'Google',
-    models: ['gemini-3-pro', 'gemini-3.1-flash', 'gemini-2.5-pro', 'gemini-2.5-flash'],
+    models: ['gemini-3.1-pro-preview', 'gemini-3.1-flash', 'gemini-2.5-pro', 'gemini-2.5-flash'],
   },
   {
     id: 'mistral',
@@ -33,8 +33,9 @@ export const PROVIDER_REGISTRY: readonly ProviderRegistryEntry[] = [
     id: 'groq',
     name: 'Groq',
     models: [
-      'llama-4-scout-17b-16e-instruct',
-      'llama-4-maverick-17b-128e-instruct',
+      'openai/gpt-oss-120b',
+      'openai/gpt-oss-20b',
+      'meta-llama/llama-4-scout-17b-16e-instruct',
       'llama-3.3-70b-versatile',
       'llama-3.1-8b-instant',
     ],
