@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Mail, MapPin, Globe, DollarSign, Trash2, Send } from 'lucide-react';
+import { FileText, Mail, MapPin, Globe, Banknote, Trash2, Send } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { formatSalary } from '@/lib/utils/currency';
 import { createApplicationNote, deleteApplicationNote } from '@/server/actions/applications';
 import type { TrackerRow } from '@/server/queries/tracker';
 
@@ -195,11 +196,11 @@ export function TrackerRowDetailPanel({
                   </div>
                   {(row.salaryMin != null || row.salaryMax != null) && (
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <Banknote className="h-4 w-4 text-muted-foreground" />
                       <span>
-                        {row.salaryMin != null && `$${row.salaryMin.toLocaleString()}`}
+                        {row.salaryMin != null && formatSalary(row.salaryMin, row.currency)}
                         {row.salaryMin != null && row.salaryMax != null && ' – '}
-                        {row.salaryMax != null && `$${row.salaryMax.toLocaleString()}`}
+                        {row.salaryMax != null && formatSalary(row.salaryMax, row.currency)}
                       </span>
                     </div>
                   )}

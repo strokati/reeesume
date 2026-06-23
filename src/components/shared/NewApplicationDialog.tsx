@@ -28,6 +28,7 @@ import {
   CreateApplicationSchema,
   type CreateApplicationInput,
 } from '@/lib/validations/applications';
+import { COMMON_CURRENCIES } from '@/lib/utils/currency';
 import type { MasterResumeSummary } from '@/types/master-resume';
 
 const locationTypes = ['On-site', 'Hybrid', 'Remote'] as const;
@@ -188,8 +189,19 @@ function NewApplicationForm({
               <Input id="salaryMax" type="number" {...register('salaryMax')} placeholder="120000" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="currency">Currency</Label>
-              <Input id="currency" {...register('currency')} placeholder="USD" />
+              <Label>Currency</Label>
+              <Select defaultValue="USD" onValueChange={(v) => setValue('currency', v ?? 'USD')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMMON_CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
