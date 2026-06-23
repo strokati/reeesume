@@ -28,6 +28,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatSalaryCompact } from '@/lib/utils/currency';
 import { ExcitementRating } from '@/components/shared/ExcitementRating';
 import {
   updateApplicationStatus,
@@ -68,14 +69,6 @@ const docStatusStyles: Record<string, string> = {
 function fmtDate(d: Date | string | null): string {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function fmtSalary(min: number | null, max: number | null): string {
-  if (min == null && max == null) return '—';
-  if (min != null && max != null)
-    return `$${(min / 1000).toFixed(0)}k–$${(max / 1000).toFixed(0)}k`;
-  if (min != null) return `$${(min / 1000).toFixed(0)}k+`;
-  return `Up to $${(max! / 1000).toFixed(0)}k`;
 }
 
 function isDeadlinePast(row: TrackerRow): boolean {
@@ -188,7 +181,7 @@ export function TrackerTable({
                 <TableCell className="font-medium truncate max-w-[180px]">{row.jobTitle}</TableCell>
                 <TableCell className="truncate max-w-[150px]">{row.companyName}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {fmtSalary(row.salaryMin, row.salaryMax)}
+                  {formatSalaryCompact(row.salaryMin, row.salaryMax, row.currency) ?? '—'}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm truncate max-w-[120px]">
                   {row.location || '—'}

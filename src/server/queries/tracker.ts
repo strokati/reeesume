@@ -6,6 +6,7 @@ export type TrackerRow = {
   companyName: string;
   salaryMin: number | null;
   salaryMax: number | null;
+  currency: string | null;
   location: string | null;
   status: string;
   dateSaved: Date;
@@ -27,7 +28,14 @@ export async function getTrackerData(userId: string): Promise<TrackerRow[]> {
     where: { vacancy: { userId } },
     include: {
       vacancy: {
-        select: { id: true, jobTitle: true, companyName: true, location: true, sourceUrl: true },
+        select: {
+          id: true,
+          jobTitle: true,
+          companyName: true,
+          location: true,
+          sourceUrl: true,
+          currency: true,
+        },
       },
       resumeDrafts: {
         where: { isActive: true },
@@ -71,6 +79,7 @@ export async function getTrackerData(userId: string): Promise<TrackerRow[]> {
       companyName: app.vacancy.companyName,
       salaryMin: app.salaryMin,
       salaryMax: app.salaryMax,
+      currency: app.vacancy.currency,
       location: app.vacancy.location,
       status: app.status,
       dateSaved: app.dateSaved,

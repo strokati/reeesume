@@ -8,7 +8,7 @@ import {
   MapPin,
   Globe,
   Calendar,
-  DollarSign,
+  Banknote,
   FileText,
   Mail,
   Trash2,
@@ -38,6 +38,7 @@ import {
 import { ChangeResumeDialog } from '@/components/applications/ChangeResumeDialog';
 import type { ApplicationDetail } from '@/types/applications';
 import type { ApplicationStatus } from '@/lib/validations/applications';
+import { formatSalary } from '@/lib/utils/currency';
 import type { MasterResumeSummary } from '@/types/master-resume';
 
 type AiConfig = { providerId: string; model: string; isDefault: boolean; apiKey: string };
@@ -193,11 +194,10 @@ export function ApplicationDetailView({
                 )}
                 {(vacancy.salaryMin || vacancy.salaryMax) && (
                   <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <DollarSign className="h-3.5 w-3.5" />
-                    {vacancy.salaryMin?.toLocaleString()}
-                    {vacancy.salaryMin && vacancy.salaryMax && ' – '}
-                    {vacancy.salaryMax?.toLocaleString()}
-                    {vacancy.currency && ` ${vacancy.currency}`}
+                    <Banknote className="h-3.5 w-3.5" />
+                    {vacancy.salaryMin != null && formatSalary(vacancy.salaryMin, vacancy.currency)}
+                    {vacancy.salaryMin != null && vacancy.salaryMax != null && ' – '}
+                    {vacancy.salaryMax != null && formatSalary(vacancy.salaryMax, vacancy.currency)}
                   </span>
                 )}
               </div>
@@ -293,7 +293,7 @@ export function ApplicationDetailView({
               />
               <TrackingField
                 label="Salary Min"
-                icon={DollarSign}
+                icon={Banknote}
                 type="number"
                 value={application.salaryMin?.toString() ?? ''}
                 placeholder="—"
@@ -301,7 +301,7 @@ export function ApplicationDetailView({
               />
               <TrackingField
                 label="Salary Max"
-                icon={DollarSign}
+                icon={Banknote}
                 type="number"
                 value={application.salaryMax?.toString() ?? ''}
                 placeholder="—"
