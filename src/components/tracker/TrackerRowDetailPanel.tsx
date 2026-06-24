@@ -194,13 +194,20 @@ export function TrackerRowDetailPanel({
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <span>{row.location || 'No location specified'}</span>
                   </div>
-                  {(row.salaryMin != null || row.salaryMax != null) && (
+                  {(row.salaryMin != null ||
+                    row.salaryMax != null ||
+                    row.proposedSalary != null) && (
                     <div className="flex items-center gap-2">
                       <Banknote className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {row.salaryMin != null && formatSalary(row.salaryMin, row.currency)}
                         {row.salaryMin != null && row.salaryMax != null && ' – '}
                         {row.salaryMax != null && formatSalary(row.salaryMax, row.currency)}
+                        {row.proposedSalary != null && (
+                          <span className="text-muted-foreground ml-2">
+                            (asked: {formatSalary(row.proposedSalary, row.currency)})
+                          </span>
+                        )}
                       </span>
                     </div>
                   )}

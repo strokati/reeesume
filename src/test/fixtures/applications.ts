@@ -5,6 +5,7 @@ export const sampleApplication = {
   status: 'saved',
   salaryMin: 100000,
   salaryMax: 150000,
+  proposedSalary: null,
   dateSaved: new Date('2024-01-15'),
   dateApplied: null,
   interviewDate: null,

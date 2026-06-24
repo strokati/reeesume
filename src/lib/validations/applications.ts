@@ -20,6 +20,7 @@ export const CreateApplicationSchema = z.object({
   locationType: z.enum(LocationTypeValues).optional(),
   salaryMin: z.string().optional(),
   salaryMax: z.string().optional(),
+  proposedSalary: z.string().optional(),
   currency: z.string().optional(),
   sourceUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   rawText: z.string().optional(),
@@ -41,6 +42,7 @@ export const UpdateTrackingSchema = z.object({
   rejectedDate: z.string().optional(),
   salaryMin: z.number().int().positive().optional().nullable(),
   salaryMax: z.number().int().positive().optional().nullable(),
+  proposedSalary: z.number().int().positive().optional().nullable(),
   excitement: z.number().int().min(1).max(5).optional(),
 });
 
