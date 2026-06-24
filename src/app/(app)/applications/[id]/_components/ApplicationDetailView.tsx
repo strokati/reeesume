@@ -276,20 +276,28 @@ export function ApplicationDetailView({
                 onSave={(v) => handleTrackingSave('dateApplied', v)}
               />
               <TrackingField
-                label="Deadline"
+                label="Interview Date"
                 icon={Calendar}
                 type="date"
-                value={formatDateForInput(application.deadline)}
+                value={formatDateForInput(application.interviewDate)}
                 placeholder="Not set"
-                onSave={(v) => handleTrackingSave('deadline', v)}
+                onSave={(v) => handleTrackingSave('interviewDate', v)}
               />
               <TrackingField
-                label="Follow Up"
+                label="Offer Date"
                 icon={Calendar}
                 type="date"
-                value={formatDateForInput(application.followUpDate)}
+                value={formatDateForInput(application.offerDate)}
                 placeholder="Not set"
-                onSave={(v) => handleTrackingSave('followUpDate', v)}
+                onSave={(v) => handleTrackingSave('offerDate', v)}
+              />
+              <TrackingField
+                label="Rejected Date"
+                icon={Calendar}
+                type="date"
+                value={formatDateForInput(application.rejectedDate)}
+                placeholder="Not set"
+                onSave={(v) => handleTrackingSave('rejectedDate', v)}
               />
               <TrackingField
                 label="Salary Min"

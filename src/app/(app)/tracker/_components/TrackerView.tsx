@@ -29,7 +29,7 @@ const statusLabels: Record<string, string> = {
   on_hold: 'On Hold',
 };
 
-type SortKey = 'dateSaved' | 'deadline' | 'companyName' | 'status';
+type SortKey = 'dateSaved' | 'companyName' | 'status';
 type SortDir = 'asc' | 'desc' | null;
 type ViewMode = 'table' | 'kanban';
 
@@ -87,12 +87,6 @@ export function TrackerView({ initialData }: { initialData: TrackerRow[] }) {
           case 'dateSaved':
             cmp = new Date(a.dateSaved).getTime() - new Date(b.dateSaved).getTime();
             break;
-          case 'deadline': {
-            const da = a.deadline ? new Date(a.deadline).getTime() : Infinity;
-            const db2 = b.deadline ? new Date(b.deadline).getTime() : Infinity;
-            cmp = da - db2;
-            break;
-          }
           case 'companyName':
             cmp = a.companyName.localeCompare(b.companyName);
             break;
@@ -192,7 +186,7 @@ export function TrackerView({ initialData }: { initialData: TrackerRow[] }) {
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             Sort:
-            {(['dateSaved', 'deadline', 'companyName', 'status'] as SortKey[]).map((key) => (
+            {(['dateSaved', 'companyName', 'status'] as SortKey[]).map((key) => (
               <Button
                 key={key}
                 variant={sortKey === key && sortDir ? 'secondary' : 'ghost'}

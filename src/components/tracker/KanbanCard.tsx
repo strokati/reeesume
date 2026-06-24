@@ -5,16 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { TrackerRow } from '@/server/queries/tracker';
 
-function deadlineColor(deadline: Date | null): string | null {
-  if (!deadline) return null;
-  const now = new Date();
-  const dl = new Date(deadline);
-  const daysUntil = (dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-  if (daysUntil < 0) return 'text-red-600 dark:text-red-400';
-  if (daysUntil < 7) return 'text-amber-600 dark:text-amber-400';
-  return null;
-}
-
 function fmtDate(d: Date | string | null): string {
   if (!d) return '';
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -35,8 +25,6 @@ export function KanbanCard({
   style?: React.CSSProperties;
   isDragging?: boolean;
 }) {
-  const dlColor = deadlineColor(row.deadline);
-
   return (
     <Card
       style={style}
@@ -66,12 +54,10 @@ export function KanbanCard({
           </div>
         )}
 
-        {row.deadline && (
-          <div
-            className={cn('flex items-center gap-1 text-xs', dlColor ?? 'text-muted-foreground')}
-          >
+        {row.dateApplied && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            {fmtDate(row.deadline)}
+            {fmtDate(row.dateApplied)}
           </div>
         )}
 
