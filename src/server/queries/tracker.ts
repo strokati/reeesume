@@ -6,6 +6,7 @@ export type TrackerRow = {
   companyName: string;
   salaryMin: number | null;
   salaryMax: number | null;
+  proposedSalary: number | null;
   currency: string | null;
   location: string | null;
   status: string;
@@ -80,6 +81,7 @@ export async function getTrackerData(userId: string): Promise<TrackerRow[]> {
       companyName: app.vacancy.companyName,
       salaryMin: app.salaryMin,
       salaryMax: app.salaryMax,
+      proposedSalary: app.proposedSalary,
       currency: app.vacancy.currency,
       location: app.vacancy.location,
       status: app.status,

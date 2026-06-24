@@ -143,7 +143,7 @@ export function ApplicationDetailView({
   }
 
   function handleTrackingSave(field: string, value: string) {
-    const numFields = ['salaryMin', 'salaryMax'];
+    const numFields = ['salaryMin', 'salaryMax', 'proposedSalary'];
     const data: Record<string, unknown> = {
       [field]: numFields.includes(field) ? (value ? parseInt(value, 10) || null : null) : value,
     };
@@ -314,6 +314,14 @@ export function ApplicationDetailView({
                 value={application.salaryMax?.toString() ?? ''}
                 placeholder="—"
                 onSave={(v) => handleTrackingSave('salaryMax', v)}
+              />
+              <TrackingField
+                label="Proposed Salary"
+                icon={Banknote}
+                type="number"
+                value={application.proposedSalary?.toString() ?? ''}
+                placeholder="—"
+                onSave={(v) => handleTrackingSave('proposedSalary', v)}
               />
             </CardContent>
           </Card>

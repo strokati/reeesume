@@ -95,6 +95,8 @@ export async function updateApplicationTracking(
       updateData.rejectedDate = validated.rejectedDate ? new Date(validated.rejectedDate) : null;
     if (validated.salaryMin !== undefined) updateData.salaryMin = validated.salaryMin;
     if (validated.salaryMax !== undefined) updateData.salaryMax = validated.salaryMax;
+    if (validated.proposedSalary !== undefined)
+      updateData.proposedSalary = validated.proposedSalary;
     if (validated.excitement !== undefined) updateData.excitement = validated.excitement;
 
     await db.application.update({ where: { id }, data: updateData });

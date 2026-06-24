@@ -326,6 +326,7 @@ model Application {
   status         String    @default("saved") // saved|planned|applied|screening|interview|offer|rejected|on_hold
   salaryMin      Int?
   salaryMax      Int?
+  proposedSalary Int? // actual number communicated at apply time
   dateSaved      DateTime  @default(now())
   dateApplied    DateTime?
   interviewDate  DateTime?
