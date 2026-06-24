@@ -36,8 +36,9 @@ export const UpdateExcitementSchema = z.object({
 
 export const UpdateTrackingSchema = z.object({
   dateApplied: z.string().optional(),
-  deadline: z.string().optional(),
-  followUpDate: z.string().optional(),
+  interviewDate: z.string().optional(),
+  offerDate: z.string().optional(),
+  rejectedDate: z.string().optional(),
   salaryMin: z.number().int().positive().optional().nullable(),
   salaryMax: z.number().int().positive().optional().nullable(),
   excitement: z.number().int().min(1).max(5).optional(),

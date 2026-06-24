@@ -10,9 +10,10 @@ export type TrackerRow = {
   location: string | null;
   status: string;
   dateSaved: Date;
-  deadline: Date | null;
   dateApplied: Date | null;
-  followUpDate: Date | null;
+  interviewDate: Date | null;
+  offerDate: Date | null;
+  rejectedDate: Date | null;
   excitement: number | null;
   resumeStatus: 'ready' | 'draft' | 'none';
   resumeAtsScore: number | null;
@@ -83,9 +84,10 @@ export async function getTrackerData(userId: string): Promise<TrackerRow[]> {
       location: app.vacancy.location,
       status: app.status,
       dateSaved: app.dateSaved,
-      deadline: app.deadline,
       dateApplied: app.dateApplied,
-      followUpDate: app.followUpDate,
+      interviewDate: app.interviewDate,
+      offerDate: app.offerDate,
+      rejectedDate: app.rejectedDate,
       excitement: app.excitement,
       resumeStatus,
       resumeAtsScore: atsData?.score ?? null,

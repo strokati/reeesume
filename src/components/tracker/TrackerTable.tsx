@@ -71,12 +71,23 @@ function fmtDate(d: Date | string | null): string {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function isDeadlinePast(row: TrackerRow): boolean {
-  if (!row.deadline) return false;
-  return new Date(row.deadline) < new Date() && row.status !== 'applied';
+function keyDate(row: TrackerRow): { label: string; date: Date | null } | null {
+  switch (row.status) {
+    case 'rejected':
+      return { label: 'Rejected', date: row.rejectedDate };
+    case 'offer':
+      return { label: 'Offer', date: row.offerDate };
+    case 'interview':
+      return { label: 'Interview', date: row.interviewDate };
+    case 'screening':
+    case 'applied':
+      return { label: 'Applied', date: row.dateApplied };
+    default:
+      return null;
+  }
 }
 
-type SortKey = 'dateSaved' | 'deadline' | 'companyName' | 'status';
+type SortKey = 'dateSaved' | 'companyName' | 'status';
 type SortDir = 'asc' | 'desc' | null;
 
 export function TrackerTable({
@@ -145,16 +156,7 @@ export function TrackerTable({
               onSort={onSort}
               className="w-[100px]"
             />
-            <SortableHead
-              label="Deadline"
-              sortKey="deadline"
-              currentKey={sortKey}
-              dir={sortDir}
-              onSort={onSort}
-              className="w-[100px]"
-            />
-            <TableHead className="w-[90px]">Applied</TableHead>
-            <TableHead className="w-[90px]">Follow Up</TableHead>
+            <TableHead className="w-[110px]">Key date</TableHead>
             <TableHead className="w-[120px]">Excitement</TableHead>
             <TableHead className="w-[80px]">Resume</TableHead>
             <TableHead className="w-[100px]">Cover Letter</TableHead>
@@ -164,7 +166,7 @@ export function TrackerTable({
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={13} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                 No applications found.
               </TableCell>
             </TableRow>
@@ -172,10 +174,7 @@ export function TrackerTable({
             rows.map((row) => (
               <TableRow
                 key={row.id}
-                className={cn(
-                  'cursor-pointer hover:bg-muted/50',
-                  isDeadlinePast(row) && 'bg-amber-50 dark:bg-amber-950/30'
-                )}
+                className={cn('cursor-pointer hover:bg-muted/50')}
                 onClick={() => onRowClick(row)}
               >
                 <TableCell className="font-medium truncate max-w-[180px]">{row.jobTitle}</TableCell>
@@ -217,21 +216,12 @@ export function TrackerTable({
                 <TableCell className="text-muted-foreground text-sm">
                   {fmtDate(row.dateSaved)}
                 </TableCell>
-                <TableCell
-                  className={cn(
-                    'text-sm',
-                    isDeadlinePast(row)
-                      ? 'text-red-600 dark:text-red-400 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  {fmtDate(row.deadline)}
-                </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {fmtDate(row.dateApplied)}
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {fmtDate(row.followUpDate)}
+                  {(() => {
+                    const kd = keyDate(row);
+                    if (!kd || !kd.date) return '—';
+                    return `${kd.label}: ${fmtDate(kd.date)}`;
+                  })()}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <ExcitementRating

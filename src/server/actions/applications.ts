@@ -87,10 +87,12 @@ export async function updateApplicationTracking(
     const updateData: Record<string, unknown> = {};
     if (validated.dateApplied !== undefined)
       updateData.dateApplied = validated.dateApplied ? new Date(validated.dateApplied) : null;
-    if (validated.deadline !== undefined)
-      updateData.deadline = validated.deadline ? new Date(validated.deadline) : null;
-    if (validated.followUpDate !== undefined)
-      updateData.followUpDate = validated.followUpDate ? new Date(validated.followUpDate) : null;
+    if (validated.interviewDate !== undefined)
+      updateData.interviewDate = validated.interviewDate ? new Date(validated.interviewDate) : null;
+    if (validated.offerDate !== undefined)
+      updateData.offerDate = validated.offerDate ? new Date(validated.offerDate) : null;
+    if (validated.rejectedDate !== undefined)
+      updateData.rejectedDate = validated.rejectedDate ? new Date(validated.rejectedDate) : null;
     if (validated.salaryMin !== undefined) updateData.salaryMin = validated.salaryMin;
     if (validated.salaryMax !== undefined) updateData.salaryMax = validated.salaryMax;
     if (validated.excitement !== undefined) updateData.excitement = validated.excitement;

@@ -327,9 +327,10 @@ model Application {
   salaryMin      Int?
   salaryMax      Int?
   dateSaved      DateTime  @default(now())
-  deadline       DateTime?
   dateApplied    DateTime?
-  followUpDate   DateTime?
+  interviewDate  DateTime?
+  offerDate      DateTime?
+  rejectedDate   DateTime?
   excitement     Int? // 1–5
   aiSuggestions  Json? // structured output from resume-suggestions operation
   createdAt      DateTime  @default(now())
