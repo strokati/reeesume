@@ -2,7 +2,7 @@
 
 **Tailor your resume to each job vacancy**
 
-Reeesume is an open-source, privacy-first career management tool that uses AI to tailor your resume to every job vacancy — locally, with full control over your data.
+Reeesume is an open-source, self-hosted tool that uses AI to tailor your resume and cover letter to each job vacancy. It runs on your own machine — your career database lives in your own PostgreSQL, AI calls go directly from the app to your chosen provider, and you can pick anything from OpenAI to fully-local Ollama.
 
 [Quick Start](#quick-start) · [Features](#features) · [Self-Hosting](#self-hosting)
 
@@ -22,7 +22,7 @@ Reeesume is an open-source, privacy-first career management tool that uses AI to
 
 **Career Database**
 
-- **Driven Resume** — your permanent private career database with 11 sections: Work Experience, Education, Skills, Projects, Certifications, Awards, Volunteering, Publications, and more. Unlimited entries, never exported or shared
+- **MasterResume** — your permanent private career database with 11 sections: Work Experience, Education, Skills, Projects, Certifications, Awards, Volunteering, Publications, and more. Unlimited entries, never exported or shared
 - **Multi-language resumes** — maintain separate resumes in different languages (English, German, French, and more) for different job markets
 - **Resume import** — bootstrap your database by uploading an existing PDF or DOCX
 
@@ -100,7 +100,7 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=you@example.com
 SMTP_PASS=your-password
-SMTP_FROM=Driven Resume <you@example.com>
+SMTP_FROM=Reeesume <you@example.com>
 ```
 
 ```bash

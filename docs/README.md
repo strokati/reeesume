@@ -2,7 +2,7 @@
 
 Install and use Reeesume on your own machine. Your career data stays private.
 
-Reeesume is a privacy-first, local-first career management tool. It uses AI to tailor your resume to every job vacancy — but it has no cloud backend, and your data never leaves your machine unless you explicitly connect a cloud AI provider.
+Reeesume is an open-source, self-hosted tool that uses AI to tailor your resume and cover letter to each job vacancy. It runs on your own machine — your career database lives in your own PostgreSQL, AI calls go directly from the app to your chosen provider, and you can pick anything from OpenAI to fully-local Ollama.
 
 ---
 
