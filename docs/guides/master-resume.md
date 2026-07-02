@@ -12,7 +12,7 @@ The Reeesume has 11 sections:
 
 | Section                       | What it holds                         | Example entries                         |
 | ----------------------------- | ------------------------------------- | --------------------------------------- |
-| **Contact Information**       | Name, email, phone, location, links   | "vadym@example.com", LinkedIn URL       |
+| **Contact Information**       | Name, email, phone, location, links   | "email@example.com", LinkedIn URL       |
 | **Target Title**              | The role you're aiming for            | "Senior Frontend Engineer"              |
 | **Professional Summary**      | 2–4 sentences positioning you         | A paragraph you tweak per market        |
 | **Work Experience**           | Companies → Roles → Projects (nested) | Acme Corp → Senior Eng → Mobile Rewrite |
