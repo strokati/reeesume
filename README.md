@@ -64,6 +64,22 @@ Data persists in a named Docker volume (`postgres_data`) across restarts.
 
 ---
 
+## Documentation
+
+Full documentation lives in [`docs/`](docs/README.md). Key entry points:
+
+| Guide                                                          | What it covers                                                                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [Install guides](docs/README.md#choose-your-path)              | Docker (local), Docker (self-hosted), and native Node.js paths                                |
+| [First-run walkthrough](docs/getting-started/first-run.md)     | 5-minute tour: configure AI, build resume, export PDF                                         |
+| [AI providers](docs/getting-started/ai-providers.md)           | Setting up cloud providers or [Ollama for offline AI](docs/getting-started/ollama-offline.md) |
+| [Where is my data?](docs/data-and-privacy/where-is-my-data.md) | File paths, Docker volumes, backup procedures                                                 |
+| [Troubleshooting](docs/troubleshooting/common-issues.md)       | Common issues and the [FAQ](docs/troubleshooting/faq.md)                                      |
+
+AI provider API keys are configured in **Settings → AI Providers** inside the app — never in `.env`. See [docs/getting-started/ai-providers.md](docs/getting-started/ai-providers.md).
+
+---
+
 ## Self-Hosting
 
 For multi-device access with email-based authentication:
