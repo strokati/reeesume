@@ -125,7 +125,7 @@ npm run build && npm run start
 ## Breaking changes
 
 - **Minor versions** (e.g. `v1.2` → `v1.3`) — backward compatible. The update flow above just works.
-- **Major versions** (e.g. `v1.x` → `v2.0`) — may include breaking migrations or config changes. Always read the [GitHub release notes](https://github.com/strokati/master-resume/releases) before updating across a major version.
+- **Major versions** (e.g. `v1.x` → `v2.0`) — may include breaking migrations or config changes. Always read the [GitHub release notes](https://github.com/strokati/reeesume/releases) before updating across a major version.
 
 ---
 

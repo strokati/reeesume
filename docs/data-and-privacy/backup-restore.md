@@ -41,7 +41,7 @@ docker compose exec db pg_dump -U reeesume reeesume > backup-$(date +%F).sql
 What each part does:
 
 - `docker compose exec db` — run a command inside the running `db` container
-- `pg_dump -U reeesume reeesume` — dump the `master-resume` database as user `master-resume`
+- `pg_dump -U reeesume reeesume` — dump the `reeesume` database as user `reeesume`
 - `> backup-$(date +%F).sql` — redirect the dump to a file named with today's date
 
 The credentials match `docker-compose.yml`. The resulting file is plain SQL — readable, version-controllable, restore-able anywhere.
@@ -155,7 +155,7 @@ Add a line like:
 
 ```cron
 # Run a daily SQL dump at 3:17 AM — off the top of the hour to avoid everyone-else's cron jobs
-17 3 * * * cd /path/to/master-resume && docker compose exec -T db pg_dump -U reeesume reeesume > /path/to/backups/master-resume-$(date +\%F).sql
+17 3 * * * cd /path/to/reeesume && docker compose exec -T db pg_dump -U reeesume reeesume > /path/to/backups/reeesume-$(date +\%F).sql
 ```
 
 Note: `%` must be escaped as `\%` in crontab.

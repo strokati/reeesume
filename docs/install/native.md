@@ -27,10 +27,10 @@ You'll still use Docker for the database (the simplest option), or you can run y
 
 ```bash
 # Download the project
-git clone https://github.com/strokati/master-resume.git
+git clone https://github.com/strokati/reeesume.git
 
 # Move into the project folder
-cd master-resume
+cd reeesume
 ```
 
 ---
@@ -70,7 +70,7 @@ Open `.env` in a text editor.
 The default `DATABASE_URL` works as-is:
 
 ```env
-DATABASE_URL="postgresql://master-resume:master-resume@localhost:5432/master-resume"
+DATABASE_URL="postgresql://reeesume:reeesume@localhost:5432/reeesume"
 AUTH_MODE=none
 ```
 

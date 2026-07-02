@@ -10,7 +10,7 @@ If you want multi-device access with email login, see [docker-self-hosted.md](do
 
 - 5–10 minutes (the first build takes most of this)
 - Docker installed and working — see [system-requirements.md](system-requirements.md)
-- The repository URL (typically `https://github.com/strokati/master-resume.git`)
+- The repository URL (typically `https://github.com/strokati/reeesume.git`)
 
 ---
 
@@ -20,10 +20,10 @@ Open a terminal in the folder where you want Reeesume to live, then:
 
 ```bash
 # Download the project from GitHub
-git clone https://github.com/strokati/master-resume.git
+git clone https://github.com/strokati/reeesume.git
 
 # Move into the project folder
-cd master-resume
+cd reeesume
 ```
 
 If you're installing from a fork or different URL, replace the URL above with yours.

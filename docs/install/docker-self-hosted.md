@@ -18,10 +18,10 @@ If you only need Reeesume on one machine, the simpler [local mode](docker.md) is
 
 ```bash
 # Download the project
-git clone https://github.com/strokati/master-resume.git
+git clone https://github.com/strokati/reeesume.git
 
 # Move into the project folder
-cd master-resume
+cd reeesume
 ```
 
 ---
