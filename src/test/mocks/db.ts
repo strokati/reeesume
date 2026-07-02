@@ -3,15 +3,20 @@ import { vi } from 'vitest';
 function createModelMock() {
   return {
     findUnique: vi.fn(),
+    findUniqueOrThrow: vi.fn(),
     findFirst: vi.fn(),
+    findFirstOrThrow: vi.fn(),
     findMany: vi.fn(),
     create: vi.fn(),
+    createMany: vi.fn(),
     update: vi.fn(),
     updateMany: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
     upsert: vi.fn(),
     count: vi.fn(),
+    aggregate: vi.fn(),
+    groupBy: vi.fn(),
   };
 }
 
