@@ -1,8 +1,8 @@
-# MasterResume — Project Instructions
+# Reeesume — Project Instructions
 
 ## What This App Does
 
-**MasterResume** is a private, local-first career management web app for job seekers who want full control over their professional narrative.
+**Reeesume** is a private, local-first career management web app for job seekers who want full control over their professional narrative.
 
 ### Core Concept
 
@@ -19,7 +19,7 @@ The app has a strict split between permanent career data and temporary output do
 
 - AI suggestions are labeled: Blue = original master data, Orange = AI-suggested, Green = manually edited.
 - Every AI entry point is visible but disabled (with a status message) when no AI provider is configured or the app is offline.
-- Editing a custom resume **never** touches the Master Resume or any other application's resume.
+- Editing a custom resume **never** touches the MasterResume or any other application's resume.
 - "Mark as Ready" flags the active draft version. The tracker shows a "Resume ready" badge.
 
 ---

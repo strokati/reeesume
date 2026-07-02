@@ -6,11 +6,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 <!-- END:nextjs-agent-rules -->
 
-# MasterResume — Agent Instructions
+# Reeesume — Agent Instructions
 
 ## What This App Does
 
-MasterResume is a private, local-first career management web app. It maintains a Master Resume (permanent career data) separate from job applications (temporary output). AI assists with tailoring resumes, drafting cover letters, and ATS checks — but never silently modifies master data.
+Reeesume is a private, local-first career management web app. It maintains a MasterResume (permanent career data) separate from job applications (temporary output). AI assists with tailoring resumes, drafting cover letters, and ATS checks — but never silently modifies master data.
 
 ## Tech Stack
 

@@ -3,13 +3,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: masterresume
-      POSTGRES_PASSWORD: masterresume
-      POSTGRES_DB: masterresume
+      POSTGRES_USER: reeesume
+      POSTGRES_PASSWORD: reeesume
+      POSTGRES_DB: reeesume
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U masterresume']
+      test: ['CMD-SHELL', 'pg_isready -U reeesume']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,7 +22,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      DATABASE_URL: postgresql://masterresume:masterresume@db:5432/masterresume
+      DATABASE_URL: postgresql://reeesume:reeesume@db:5432/reeesume
       AUTH_MODE: none
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: change-me-in-production

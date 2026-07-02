@@ -1,4 +1,4 @@
-# Pre-commit hooks configuration for MasterResume
+# Pre-commit hooks configuration for Reeesume
 # Run: pre-commit install --install-hooks
 # Test: pre-commit run --all-files
 

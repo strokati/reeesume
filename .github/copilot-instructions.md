@@ -1,8 +1,8 @@
-# Copilot Instructions — MasterResume
+# Copilot Instructions — Reeesume
 
 ## Project overview
 
-Private career management app: Master Resume (permanent data) + Job Applications (temporary output). AI assists but never silently modifies master data. Built with Next.js 15, Prisma, PostgreSQL, Vercel AI SDK, Tailwind + shadcn/ui.
+Private career management app: MasterResume (permanent data) + Job Applications (temporary output). AI assists but never silently modifies master data. Built with Next.js 15, Prisma, PostgreSQL, Vercel AI SDK, Tailwind + shadcn/ui.
 
 ## Conventions
 
