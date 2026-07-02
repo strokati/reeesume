@@ -17,6 +17,16 @@ Backups are cheap. Data loss is expensive. Do it.
 
 ---
 
+## In-app backup (no terminal)
+
+The **Settings → Export / Import** panel produces a JSON archive of all your data — master resumes, applications, drafts, AI configs (encrypted keys), and call logs — without leaving the browser. Use it for ad-hoc backups before risky changes.
+
+The same panel can restore from such an archive. Restore is destructive: it replaces your current data with the archive contents. A pre-restore snapshot is written to `./backups/` as a last-resort recovery file.
+
+The CLI methods below are still recommended for automated/cron backups and for the most portable cross-machine restores.
+
+---
+
 ## Backup method A — SQL dump (recommended)
 
 The most portable format. Works across Postgres versions and across Docker / native installs.

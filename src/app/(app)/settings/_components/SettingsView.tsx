@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings2, Sparkles, Server, Paintbrush } from 'lucide-react';
+import { Settings2, Sparkles, Server, Paintbrush, Database } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { AiProvidersPanel } from '@/components/ai/AiProvidersPanel';
+import { DataExportPanel } from '@/components/settings/DataExportPanel';
 import { PromptsPanel } from './PromptsPanel';
 
 type SavedConfig = {
@@ -14,7 +15,7 @@ type SavedConfig = {
   baseUrl?: string | null;
 };
 
-type SectionId = 'ai-providers' | 'prompts' | 'appearance' | 'deployment';
+type SectionId = 'ai-providers' | 'prompts' | 'appearance' | 'deployment' | 'export-import';
 
 const sections: { id: SectionId; label: string; description: string; icon: React.ElementType }[] = [
   {
@@ -28,6 +29,12 @@ const sections: { id: SectionId; label: string; description: string; icon: React
     label: 'Prompts',
     description: 'Customize AI behavior',
     icon: Settings2,
+  },
+  {
+    id: 'export-import',
+    label: 'Export / Import',
+    description: 'Backup and restore',
+    icon: Database,
   },
   {
     id: 'appearance',
@@ -80,6 +87,7 @@ export function SettingsView({ configs, authMode }: { configs: SavedConfig[]; au
         <div>
           {activeSection === 'ai-providers' && <AiProvidersPanel configs={configs} />}
           {activeSection === 'prompts' && <PromptsPanel />}
+          {activeSection === 'export-import' && <DataExportPanel />}
           {activeSection === 'appearance' && <AppearancePlaceholder />}
           {activeSection === 'deployment' && <DeploymentSection authMode={authMode} />}
         </div>
