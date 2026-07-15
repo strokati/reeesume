@@ -41,6 +41,7 @@ describe('createResumeDraft', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('creates a draft and returns its id', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
     db.application.findUnique.mockResolvedValue({
       id: 'app-1',
       masterResumeId: 'resume-1',
@@ -52,12 +53,20 @@ describe('createResumeDraft', () => {
     expect(id).toBe('draft-1');
     expect(revalidatePath).toHaveBeenCalledWith('/applications/app-1/resume');
   });
+
+  it('throws when application does not belong to user (IDOR guard)', async () => {
+    db.application.findFirst.mockResolvedValue(null);
+    await expect(createResumeDraft('app-1', 'Draft 1')).rejects.toThrow('Not found.');
+    expect(db.resumeDraft.create).not.toHaveBeenCalled();
+  });
 });
 
 describe('setActiveDraft', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('deactivates all other drafts then activates target', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
+    db.resumeDraft.findFirst.mockResolvedValue({ id: 'draft-1' });
     db.$transaction.mockImplementation(async (fn: any) => {
       if (typeof fn === 'function') return fn(db);
       return Promise.all(fn);
@@ -82,6 +91,8 @@ describe('setActiveDraft', () => {
   });
 
   it('revalidates after activation', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
+    db.resumeDraft.findFirst.mockResolvedValue({ id: 'draft-1' });
     db.$transaction.mockImplementation(async (fn: any) => {
       if (typeof fn === 'function') return fn(db);
       return Promise.all(fn);
@@ -91,5 +102,11 @@ describe('setActiveDraft', () => {
 
     await setActiveDraft('draft-1', 'app-1');
     expect(revalidatePath).toHaveBeenCalledWith('/applications/app-1/resume');
+  });
+
+  it('throws when draft does not belong to user (IDOR guard)', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
+    db.resumeDraft.findFirst.mockResolvedValue(null);
+    await expect(setActiveDraft('draft-1', 'app-1')).rejects.toThrow('Not found.');
   });
 });

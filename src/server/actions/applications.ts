@@ -11,6 +11,7 @@ import {
   UpdateTrackingSchema,
 } from '@/lib/validations/applications';
 import type { CreateApplicationInput } from '@/lib/validations/applications';
+import { assertApplicationOwned, assertApplicationNoteOwned } from './_ownership';
 
 async function requireAuth(): Promise<string> {
   const session = await auth();
@@ -54,7 +55,8 @@ export async function createApplication(data: CreateApplicationInput): Promise<s
 }
 
 export async function updateApplicationStatus(id: string, data: { status: string }): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, id);
   const validated = UpdateApplicationStatusSchema.parse(data);
   try {
     await db.application.update({ where: { id }, data: { status: validated.status } });
@@ -66,7 +68,8 @@ export async function updateApplicationStatus(id: string, data: { status: string
 }
 
 export async function updateExcitement(id: string, data: { excitement: number }): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, id);
   const validated = UpdateExcitementSchema.parse(data);
   try {
     await db.application.update({ where: { id }, data: { excitement: validated.excitement } });
@@ -81,7 +84,8 @@ export async function updateApplicationTracking(
   id: string,
   data: Record<string, unknown>
 ): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, id);
   const validated = UpdateTrackingSchema.parse(data);
   try {
     const updateData: Record<string, unknown> = {};
@@ -108,7 +112,8 @@ export async function updateApplicationTracking(
 }
 
 export async function deleteApplication(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, id);
   try {
     const application = await db.application.findUnique({
       where: { id },
@@ -127,7 +132,8 @@ export async function deleteApplication(id: string): Promise<void> {
 }
 
 export async function createApplicationNote(applicationId: string, content: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
   if (!content.trim()) throw new Error('Note content cannot be empty.');
   try {
     await db.applicationNote.create({
@@ -140,7 +146,8 @@ export async function createApplicationNote(applicationId: string, content: stri
 }
 
 export async function deleteApplicationNote(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationNoteOwned(userId, id);
   try {
     await db.applicationNote.delete({ where: { id } });
   } catch {
