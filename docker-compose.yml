@@ -25,7 +25,7 @@ services:
       DATABASE_URL: postgresql://reeesume:reeesume@db:5432/reeesume
       AUTH_MODE: none
       NEXTAUTH_URL: http://localhost:3000
-      NEXTAUTH_SECRET: change-me-in-production
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?must-be-set-generate-with-openssl-rand-base64-32}
       NODE_ENV: production
     depends_on:
       db:

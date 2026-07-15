@@ -6,6 +6,33 @@ import nodemailer from 'nodemailer';
 import { db } from '@/lib/db/client';
 import { generateOtp } from './otp';
 
+const PLACEHOLDER_SECRETS = new Set([
+  'change-me-in-production',
+  'placeholder',
+  'changeme',
+  'secret',
+  '',
+]);
+
+function assertNextauthSecret(): void {
+  const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  if (!secret || PLACEHOLDER_SECRETS.has(secret.trim().toLowerCase())) {
+    throw new Error(
+      '[boot] NEXTAUTH_SECRET is missing or placeholder. Generate one with:\n' +
+        '  openssl rand -base64 32\n' +
+        'Then set it in your .env (or docker-compose env).'
+    );
+  }
+  if (secret.length < 32) {
+    console.warn(
+      `[boot] NEXTAUTH_SECRET is shorter than 32 chars (got ${secret.length}). ` +
+        'Recommend regenerating with: openssl rand -base64 32'
+    );
+  }
+}
+
+assertNextauthSecret();
+
 const authMode = process.env.AUTH_MODE ?? 'none';
 
 const emailOtpConfig = {
