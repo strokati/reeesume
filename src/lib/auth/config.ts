@@ -20,7 +20,7 @@ const emailOtpConfig = {
           pass: process.env.SMTP_PASS,
         },
       },
-      from: process.env.EMAIL_FROM ?? 'noreply@example.com',
+      from: process.env.SMTP_FROM ?? process.env.EMAIL_FROM ?? 'noreply@example.com',
       sendVerificationRequest: async ({ identifier: email }: { identifier: string }) => {
         const user = await db.user.findUnique({ where: { email } });
         if (!user) return;
@@ -46,7 +46,7 @@ const emailOtpConfig = {
         });
 
         await transporter.sendMail({
-          from: process.env.EMAIL_FROM ?? 'noreply@example.com',
+          from: process.env.SMTP_FROM ?? process.env.EMAIL_FROM ?? 'noreply@example.com',
           to: email,
           subject: 'Your verification code',
           text: `Your verification code is: ${code}. It expires in 10 minutes.`,
