@@ -22,17 +22,17 @@ export async function getProvider(config: ProviderConfig): Promise<LanguageModel
 
   switch (providerId) {
     case 'openai':
-      return createOpenAI()(model);
+      return createOpenAI({ apiKey })(model);
     case 'anthropic':
-      return createAnthropic()(model);
+      return createAnthropic({ apiKey })(model);
     case 'google':
-      return createGoogleGenerativeAI()(model);
+      return createGoogleGenerativeAI({ apiKey })(model);
     case 'mistral':
-      return createMistral()(model);
+      return createMistral({ apiKey })(model);
     case 'groq':
-      return createGroq()(model);
+      return createGroq({ apiKey })(model);
     case 'xai':
-      return createXai()(model);
+      return createXai({ apiKey })(model);
     case 'zai':
       if (apiMode === 'anthropic') {
         return createAnthropic({
@@ -46,7 +46,7 @@ export async function getProvider(config: ProviderConfig): Promise<LanguageModel
         apiKey: apiKey || process.env.ZAI_API_KEY,
       })(model);
     case 'deepseek':
-      return createDeepSeek()(model);
+      return createDeepSeek({ apiKey })(model);
     case 'ollama':
       return createOpenAI({
         baseURL: baseUrl || 'http://localhost:11434/v1',
@@ -55,7 +55,7 @@ export async function getProvider(config: ProviderConfig): Promise<LanguageModel
     case 'custom':
       return createOpenAI({
         baseURL: baseUrl || undefined,
-        apiKey: 'custom',
+        apiKey: apiKey || 'custom',
       })(model);
     default:
       throw new Error(`Unknown AI provider: ${providerId}`);
@@ -76,27 +76,12 @@ export async function getProviderForUser(
 
   const apiKey = decryptApiKey(config.apiKey);
 
-  // Temporarily set env var so the SDK factory picks it up
-  const envKeyMap: Record<string, string> = {
-    openai: 'OPENAI_API_KEY',
-    anthropic: 'ANTHROPIC_API_KEY',
-    google: 'GOOGLE_GENERATIVE_AI_API_KEY',
-    mistral: 'MISTRAL_API_KEY',
-    groq: 'GROQ_API_KEY',
-    xai: 'XAI_API_KEY',
-    deepseek: 'DEEPSEEK_API_KEY',
-  };
-  const envKey = envKeyMap[providerId];
-  if (envKey) {
-    process.env[envKey] = apiKey;
-  }
-
   const model = await getProvider({
     providerId,
     model: config.model,
     baseUrl: config.baseUrl,
-    apiKey: providerId === 'zai' ? apiKey : undefined,
-    apiMode: providerId === 'zai' ? (config.apiMode as 'openai' | 'anthropic' | null) : null,
+    apiKey,
+    apiMode: config.apiMode as 'openai' | 'anthropic' | null,
   });
 
   return { model, modelName: config.model, providerId };
