@@ -1,5 +1,6 @@
 import { PDFParse } from 'pdf-parse';
 import { auth } from '@/lib/auth/config';
+import { assertSameOrigin } from '@/lib/auth/csrf';
 import { importResume } from '@/lib/ai/operations/import-resume';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -9,6 +10,11 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 export async function POST(req: Request) {
+  try {
+    assertSameOrigin(req);
+  } catch {
+    return new Response('Forbidden', { status: 403 });
+  }
   const session = await auth();
   if (!session && process.env.AUTH_MODE === 'email_otp') {
     return new Response('Unauthorized', { status: 401 });

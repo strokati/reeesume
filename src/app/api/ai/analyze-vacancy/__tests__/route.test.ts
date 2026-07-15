@@ -18,7 +18,7 @@ vi.mock('@/lib/ai/operations/analyze-vacancy', () => ({
 }));
 
 import { POST } from '@/app/api/ai/analyze-vacancy/route';
-import { createPostRequest } from '@/test/helpers/api-route';
+import { createPostRequest, createCrossOriginPostRequest } from '@/test/helpers/api-route';
 
 describe('POST /api/ai/analyze-vacancy', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -71,5 +71,15 @@ describe('POST /api/ai/analyze-vacancy', () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(200);
+  });
+
+  it('returns 403 when Origin header does not match Host (CSRF guard)', async () => {
+    const req = createCrossOriginPostRequest('http://localhost/api/ai/analyze-vacancy', {
+      applicationId: 'app-1',
+      providerId: 'openai',
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    expect(db.application.findUnique).not.toHaveBeenCalled();
   });
 });

@@ -58,6 +58,17 @@ const emailOtpConfig = {
     strategy: 'database' as const,
     maxAge: Number(process.env.SESSION_DURATION_DAYS ?? 30) * 86400,
   },
+  cookies: {
+    sessionToken: {
+      name: 'authjs.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     async signIn({ user }: { user: { email?: string | null } }) {
       if (user.email && user.email !== process.env.ALLOWED_EMAIL) {
