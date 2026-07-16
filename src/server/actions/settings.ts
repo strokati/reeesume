@@ -108,8 +108,9 @@ export async function testAiConnection(
     if (!config || !config.apiKey) {
       return { success: false, error: 'Provider not configured or API key missing.' };
     }
-    const { decryptApiKey } = await import('@/lib/ai/encryption');
-    apiKey = decryptApiKey(config.apiKey);
+    const { decryptApiKeyWithVersion } = await import('@/lib/ai/encryption');
+    const version = (config.encryptionVersion ?? 1) === 2 ? 2 : 1;
+    apiKey = decryptApiKeyWithVersion(config.apiKey, version);
     model = config.model;
     baseUrl = config.baseUrl;
     apiMode = (config.apiMode as 'openai' | 'anthropic' | null) ?? null;

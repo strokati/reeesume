@@ -410,17 +410,18 @@ model ApplicationNote {
 // =============================================================================
 
 model AiProviderConfig {
-  id          String   @id @default(cuid())
-  userId      String
-  providerId  String // openai|anthropic|google|mistral|groq|xai|cohere|zai|ollama|custom
-  apiKey      String? // encrypted at rest (application-level encryption)
-  model       String // e.g. "gpt-4o", "claude-3-5-sonnet-20241022"
-  isDefault   Boolean  @default(false)
-  baseUrl     String? // for ollama or custom providers
-  displayName String? // for custom providers
-  apiMode     String? // null|'openai'|'anthropic' — currently only z.ai uses 'anthropic'
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String
+  providerId        String // openai|anthropic|google|mistral|groq|xai|cohere|zai|ollama|custom
+  apiKey            String? // encrypted at rest (application-level encryption)
+  model             String // e.g. "gpt-4o", "claude-3-5-sonnet-20241022"
+  isDefault         Boolean  @default(false)
+  baseUrl           String? // for ollama or custom providers
+  displayName       String? // for custom providers
+  apiMode           String? // null|'openai'|'anthropic' — currently only z.ai uses 'anthropic'
+  encryptionVersion Int      @default(2) // 1 = legacy (no salt prefix); 2 = per-row random salt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
