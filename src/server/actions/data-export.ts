@@ -135,45 +135,37 @@ async function insertFromArchive(
 ): Promise<void> {
   // 1. Master resumes — children ride along via nested create.
   for (const masterResume of archive.masterResumes) {
-    await tx.masterResume.create({ data: buildMasterResumeCreate(masterResume, userId) as never });
+    await tx.masterResume.create({
+      data: buildMasterResumeCreate(masterResume as unknown as LooseRecord, userId) as never,
+    });
   }
 
   // 2. Vacancies.
   for (const vacancy of archive.vacancies) {
-    const { application: _application, user: _user, ...scalarFields } = vacancy;
-    void _application;
-    void _user;
-    await tx.vacancy.create({ data: { ...scalarFields, userId } as never });
+    await tx.vacancy.create({ data: { ...vacancy, userId } as never });
   }
 
   // 3. Applications — include nested drafts and notes via nested create.
   for (const application of archive.applications) {
-    await tx.application.create({ data: buildApplicationCreate(application) as never });
+    await tx.application.create({
+      data: buildApplicationCreate(application as unknown as LooseRecord) as never,
+    });
   }
 
   // 4. AI provider configs, call logs, prompt overrides — flat tables.
   if (archive.aiProviderConfigs.length > 0) {
     await tx.aiProviderConfig.createMany({
-      data: archive.aiProviderConfigs.map(({ user: _u, ...fields }) => {
-        void _u;
-        return { ...fields, userId };
-      }) as never,
+      data: archive.aiProviderConfigs.map((fields) => ({ ...fields, userId })) as never,
     });
   }
   if (archive.aiCallLogs.length > 0) {
     await tx.aiCallLog.createMany({
-      data: archive.aiCallLogs.map(({ user: _u, ...fields }) => {
-        void _u;
-        return { ...fields, userId };
-      }) as never,
+      data: archive.aiCallLogs.map((fields) => ({ ...fields, userId })) as never,
     });
   }
   if (archive.aiPromptOverrides.length > 0) {
     await tx.aiPromptOverride.createMany({
-      data: archive.aiPromptOverrides.map(({ user: _u, ...fields }) => {
-        void _u;
-        return { ...fields, userId };
-      }) as never,
+      data: archive.aiPromptOverrides.map((fields) => ({ ...fields, userId })) as never,
     });
   }
 }
