@@ -17,17 +17,30 @@ vi.mock('nodemailer', () => ({
 
 describe('NEXTAUTH_SECRET boot guard', () => {
   const original = process.env.NEXTAUTH_SECRET;
+  const originalMode = process.env.AUTH_MODE;
   const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
   beforeEach(() => {
     vi.resetModules();
     delete process.env.NEXTAUTH_SECRET;
     delete process.env.AUTH_SECRET;
+    // The guard only runs when self-hosted OTP mode is active. In local mode
+    // (AUTH_MODE=none) auth is disabled and the encryption layer enforces the
+    // secret lazily when a key is actually stored.
+    process.env.AUTH_MODE = 'email_otp';
     warnSpy.mockClear();
   });
 
   afterEach(() => {
     if (original !== undefined) process.env.NEXTAUTH_SECRET = original;
+    if (originalMode !== undefined) process.env.AUTH_MODE = originalMode;
+    else delete process.env.AUTH_MODE;
+  });
+
+  it('skips the guard entirely in AUTH_MODE=none', async () => {
+    delete process.env.NEXTAUTH_SECRET;
+    process.env.AUTH_MODE = 'none';
+    await expect(import('@/lib/auth/config')).resolves.toBeDefined();
   });
 
   it('throws when NEXTAUTH_SECRET is the documented placeholder', async () => {
