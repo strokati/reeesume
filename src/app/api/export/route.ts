@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth/config';
+import { assertSameOrigin } from '@/lib/auth/csrf';
 import { db } from '@/lib/db/client';
 import {
   renderToPdf,
@@ -20,6 +21,11 @@ function bufferResponse(buffer: Buffer, contentType: string, filename: string) {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    assertSameOrigin(req);
+  } catch {
+    return new Response('Forbidden', { status: 403 });
+  }
   const session = await auth();
   if (!session && process.env.AUTH_MODE === 'email_otp') {
     return new Response('Unauthorized', { status: 401 });
