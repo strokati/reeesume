@@ -43,6 +43,7 @@ export const db = {
   aiProviderConfig: createModelMock(),
   aiCallLog: createModelMock(),
   aiPromptOverride: createModelMock(),
+  rateLimit: createModelMock(),
   $transaction: vi.fn((ops: unknown[]) => Promise.all(ops)),
 };
 
