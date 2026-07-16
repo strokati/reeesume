@@ -6,7 +6,7 @@ import { createGroq } from '@ai-sdk/groq';
 import { createXai } from '@ai-sdk/xai';
 import { createDeepSeek } from '@ai-sdk/deepseek';
 import { db } from '@/lib/db/client';
-import { decryptApiKey } from '@/lib/ai/encryption';
+import { decryptApiKeyWithVersion, encryptApiKey } from '@/lib/ai/encryption';
 import type { LanguageModel } from 'ai';
 
 type ProviderConfig = {
@@ -74,7 +74,21 @@ export async function getProviderForUser(
     throw new Error(`AI provider "${providerId}" is not configured. Set it up in Settings.`);
   }
 
-  const apiKey = decryptApiKey(config.apiKey);
+  const version = (config.encryptionVersion ?? 1) === 2 ? 2 : 1;
+  const apiKey = decryptApiKeyWithVersion(config.apiKey, version);
+
+  // Auto-migrate V1 rows to V2 lazily on first read. Best-effort — don't
+  // fail the AI call if the write fails.
+  if (version === 1) {
+    db.aiProviderConfig
+      .update({
+        where: { id: config.id },
+        data: { apiKey: encryptApiKey(apiKey), encryptionVersion: 2 },
+      })
+      .catch(() => {
+        /* best-effort migration */
+      });
+  }
 
   const model = await getProvider({
     providerId,
