@@ -48,7 +48,7 @@ describe('UserArchiveSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('accepts archives with extra unknown leaf fields (forward-compat passthrough)', () => {
+  it('rejects archives with unknown leaf fields (strict-mode injection defense)', () => {
     const withExtras = {
       ...sampleArchive,
       masterResumes: sampleArchive.masterResumes.map((mr) => ({
@@ -58,7 +58,22 @@ describe('UserArchiveSchema', () => {
       })),
     };
     const result = UserArchiveSchema.safeParse(withExtras);
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a malicious archive with injected isDefault: true', () => {
+    // Even though isDefault is a known field, the strict schema exposes it as
+    // a boolean — an attacker cannot escalate privileges by claiming default
+    // status via a stringified/coerced shape.
+    const tampered = {
+      ...sampleArchive,
+      masterResumes: sampleArchive.masterResumes.map((mr) => ({
+        ...mr,
+        isDefault: 'true', // wrong type
+      })),
+    };
+    const result = UserArchiveSchema.safeParse(tampered);
+    expect(result.success).toBe(false);
   });
 
   it('rejects a non-string appVersion', () => {

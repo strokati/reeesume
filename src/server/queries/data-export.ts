@@ -70,5 +70,5 @@ export async function buildUserArchive(userId: string): Promise<UserArchive> {
     aiProviderConfigs: aiProviderConfigs.map(serializeDates),
     aiCallLogs: aiCallLogs.map(serializeDates),
     aiPromptOverrides: aiPromptOverrides.map(serializeDates),
-  };
+  } as unknown as UserArchive;
 }
