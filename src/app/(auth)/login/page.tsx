@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +23,7 @@ type EmailForm = z.infer<typeof emailSchema>;
 type OtpForm = z.infer<typeof otpSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -56,9 +58,16 @@ export default function LoginPage() {
 
   async function onOtpSubmit(data: OtpForm) {
     setError('');
-    void email;
-    void data.code;
-    // TODO: Verify OTP and complete sign-in
+    const result = await signIn('otp', {
+      email,
+      code: data.code,
+      redirect: false,
+    });
+    if (result?.error) {
+      setError('Invalid or expired code.');
+      return;
+    }
+    router.push('/');
   }
 
   return (

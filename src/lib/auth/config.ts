@@ -2,9 +2,10 @@ import crypto from 'crypto';
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import Nodemailer from 'next-auth/providers/nodemailer';
+import Credentials from 'next-auth/providers/credentials';
 import nodemailer from 'nodemailer';
 import { db } from '@/lib/db/client';
-import { generateOtp } from './otp';
+import { generateOtp, verifyOtp } from './otp';
 
 const authMode = process.env.AUTH_MODE ?? 'none';
 
@@ -20,7 +21,7 @@ const emailOtpConfig = {
           pass: process.env.SMTP_PASS,
         },
       },
-      from: process.env.EMAIL_FROM ?? 'noreply@example.com',
+      from: process.env.SMTP_FROM ?? process.env.EMAIL_FROM ?? 'noreply@example.com',
       sendVerificationRequest: async ({ identifier: email }: { identifier: string }) => {
         const user = await db.user.findUnique({ where: { email } });
         if (!user) return;
@@ -46,11 +47,33 @@ const emailOtpConfig = {
         });
 
         await transporter.sendMail({
-          from: process.env.EMAIL_FROM ?? 'noreply@example.com',
+          from: process.env.SMTP_FROM ?? process.env.EMAIL_FROM ?? 'noreply@example.com',
           to: email,
           subject: 'Your verification code',
           text: `Your verification code is: ${code}. It expires in 10 minutes.`,
         });
+      },
+    }),
+    Credentials({
+      id: 'otp',
+      name: 'One-time code',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        code: { label: 'Code', type: 'text' },
+      },
+      async authorize(creds) {
+        const email = creds?.email;
+        const code = creds?.code;
+        if (typeof email !== 'string' || typeof code !== 'string') return null;
+        if (email !== process.env.ALLOWED_EMAIL) return null;
+
+        const user = await db.user.findUnique({ where: { email } });
+        if (!user) return null;
+
+        const ok = await verifyOtp(user.id, code);
+        if (!ok) return null;
+
+        return { id: user.id, email: user.email };
       },
     }),
   ],
