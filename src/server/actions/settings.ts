@@ -119,24 +119,12 @@ export async function testAiConnection(
   const { generateText } = await import('ai');
 
   try {
-    const envKeyMap: Record<string, string> = {
-      openai: 'OPENAI_API_KEY',
-      anthropic: 'ANTHROPIC_API_KEY',
-      google: 'GOOGLE_GENERATIVE_AI_API_KEY',
-      mistral: 'MISTRAL_API_KEY',
-      groq: 'GROQ_API_KEY',
-      xai: 'XAI_API_KEY',
-      deepseek: 'DEEPSEEK_API_KEY',
-    };
-    const envKey = envKeyMap[providerId];
-    if (envKey) process.env[envKey] = apiKey;
-
     const aiModel = await getProvider({
       providerId,
       model,
       baseUrl,
-      apiKey: providerId === 'zai' ? apiKey : undefined,
-      apiMode: providerId === 'zai' ? apiMode : null,
+      apiKey,
+      apiMode,
     });
 
     await generateText({ model: aiModel, prompt: 'Say "ok" in one word.' });
