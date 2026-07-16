@@ -50,11 +50,24 @@ model OtpCode {
   hashedCode String
   expiresAt  DateTime
   usedAt     DateTime?
+  attempts   Int       @default(0)
   createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("otp_codes")
+}
+
+model RateLimit {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("rate_limits")
 }
 
 // =============================================================================

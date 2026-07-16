@@ -4,8 +4,10 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import Nodemailer from 'next-auth/providers/nodemailer';
 import Credentials from 'next-auth/providers/credentials';
 import nodemailer from 'nodemailer';
+import { headers } from 'next/headers';
 import { db } from '@/lib/db/client';
 import { generateOtp, verifyOtp } from './otp';
+import { checkAndIncrement } from './rate-limit';
 
 const PLACEHOLDER_SECRETS = new Set([
   'change-me-in-production',
@@ -50,6 +52,19 @@ const emailOtpConfig = {
       },
       from: process.env.SMTP_FROM ?? process.env.EMAIL_FROM ?? 'noreply@example.com',
       sendVerificationRequest: async ({ identifier: email }: { identifier: string }) => {
+        // Rate limit: 10 OTPs/hour per IP, 5/hour per email. Prevents email
+        // bombing and brute-force pressure on the 6-digit space.
+        const h = await headers();
+        const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+        const ISSUE_LIMIT_IP = { max: 10, windowMs: 60 * 60 * 1000 };
+        const ISSUE_LIMIT_EMAIL = { max: 5, windowMs: 60 * 60 * 1000 };
+        if (!(await checkAndIncrement(`otp:ip:${ip}`, ISSUE_LIMIT_IP))) {
+          throw new Error('Too many OTP requests from this IP. Try again later.');
+        }
+        if (!(await checkAndIncrement(`otp:email:${email}`, ISSUE_LIMIT_EMAIL))) {
+          throw new Error('Too many OTP requests for this email. Try again later.');
+        }
+
         const user = await db.user.findUnique({ where: { email } });
         if (!user) return;
 
