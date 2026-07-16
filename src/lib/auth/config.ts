@@ -18,6 +18,10 @@ const PLACEHOLDER_SECRETS = new Set([
 ]);
 
 function assertNextauthSecret(): void {
+  // Only required for self-hosted OTP mode. In local mode (AUTH_MODE=none) auth
+  // is fully disabled and the secret is never read.
+  if (process.env.AUTH_MODE !== 'email_otp') return;
+
   const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
   if (!secret || PLACEHOLDER_SECRETS.has(secret.trim().toLowerCase())) {
     throw new Error(
