@@ -57,6 +57,27 @@ import type {
   CreateMasterResumeInput,
 } from '@/lib/validations/master-resume';
 import { ImportedResumeSchema, type ImportedResumeData } from '@/lib/ai/prompts/import-resume';
+import {
+  assertResumeOwned,
+  assertWorkCompanyOwned,
+  assertWorkRoleOwned,
+  assertWorkProjectOwned,
+  assertEducationOwned,
+  assertSkillOwned,
+  assertCertificationOwned,
+  assertAwardOwned,
+  assertProjectOwned,
+  assertVolunteeringRoleOwned,
+  assertPublicationOwned,
+  assertAllWorkCompaniesInResume,
+  assertAllEducationInResume,
+  assertAllSkillsInResume,
+  assertAllCertificationsInResume,
+  assertAllAwardsInResume,
+  assertAllProjectsInResume,
+  assertAllVolunteeringRolesInResume,
+  assertAllPublicationsInResume,
+} from './_ownership';
 
 async function requireAuth(): Promise<string> {
   const session = await auth();
@@ -67,12 +88,6 @@ async function requireAuth(): Promise<string> {
 // =============================================================================
 // Multi-Resume Management
 // =============================================================================
-
-async function verifyOwnership(userId: string, resumeId: string) {
-  const resume = await db.masterResume.findFirst({ where: { id: resumeId, userId } });
-  if (!resume) throw new Error('Resume not found.');
-  return resume;
-}
 
 export async function createMasterResume(data: CreateMasterResumeInput): Promise<{ id: string }> {
   const userId = await requireAuth();
@@ -86,7 +101,7 @@ export async function createMasterResume(data: CreateMasterResumeInput): Promise
 
 export async function renameMasterResume(resumeId: string, name: string): Promise<void> {
   const userId = await requireAuth();
-  await verifyOwnership(userId, resumeId);
+  await assertResumeOwned(userId, resumeId);
   const validated = RenameMasterResumeSchema.parse({ name });
   await db.masterResume.update({ where: { id: resumeId }, data: { name: validated.name } });
   revalidatePath('/master-resume');
@@ -94,7 +109,7 @@ export async function renameMasterResume(resumeId: string, name: string): Promis
 
 export async function setMasterResumeLanguage(resumeId: string, language: string): Promise<void> {
   const userId = await requireAuth();
-  await verifyOwnership(userId, resumeId);
+  await assertResumeOwned(userId, resumeId);
   const validated = SetLanguageSchema.parse({ language });
   await db.masterResume.update({ where: { id: resumeId }, data: { language: validated.language } });
   revalidatePath('/master-resume');
@@ -102,7 +117,7 @@ export async function setMasterResumeLanguage(resumeId: string, language: string
 
 export async function setDefaultMasterResume(resumeId: string): Promise<void> {
   const userId = await requireAuth();
-  const resume = await verifyOwnership(userId, resumeId);
+  const resume = await assertResumeOwned(userId, resumeId);
 
   await db.$transaction([
     db.masterResume.updateMany({ where: { userId }, data: { isDefault: false } }),
@@ -113,7 +128,7 @@ export async function setDefaultMasterResume(resumeId: string): Promise<void> {
 
 export async function deleteMasterResume(resumeId: string): Promise<void> {
   const userId = await requireAuth();
-  const resume = await verifyOwnership(userId, resumeId);
+  const resume = await assertResumeOwned(userId, resumeId);
 
   const totalCount = await db.masterResume.count({ where: { userId } });
   if (totalCount <= 1) {
@@ -151,7 +166,8 @@ export async function deleteMasterResume(resumeId: string): Promise<void> {
 // =============================================================================
 
 export async function updateContactInfo(resumeId: string, data: ContactInfoInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = ContactInfoSchema.parse(data);
   try {
     await db.masterResume.update({ where: { id: resumeId }, data: { contactInfo: validated } });
@@ -162,7 +178,8 @@ export async function updateContactInfo(resumeId: string, data: ContactInfoInput
 }
 
 export async function updateTargetTitle(resumeId: string, targetTitle: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = z.string().parse(targetTitle);
   try {
     await db.masterResume.update({ where: { id: resumeId }, data: { targetTitle: validated } });
@@ -173,7 +190,8 @@ export async function updateTargetTitle(resumeId: string, targetTitle: string): 
 }
 
 export async function updateProfessionalSummary(resumeId: string, summary: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = z.string().parse(summary);
   try {
     await db.masterResume.update({
@@ -194,7 +212,8 @@ export async function createWorkCompany(
   resumeId: string,
   data: CreateWorkCompanyInput
 ): Promise<ReturnType<typeof db.workCompany.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateWorkCompanySchema.parse(data);
   try {
     const count = await db.workCompany.count({ where: { resumeId } });
@@ -207,7 +226,8 @@ export async function createWorkCompany(
 }
 
 export async function updateWorkCompany(id: string, data: UpdateWorkCompanyInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkCompanyOwned(userId, id);
   const validated = UpdateWorkCompanySchema.parse(data);
   try {
     await db.workCompany.update({ where: { id }, data: validated });
@@ -218,7 +238,8 @@ export async function updateWorkCompany(id: string, data: UpdateWorkCompanyInput
 }
 
 export async function deleteWorkCompany(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkCompanyOwned(userId, id);
   try {
     await db.workCompany.delete({ where: { id } });
   } catch {
@@ -228,7 +249,8 @@ export async function deleteWorkCompany(id: string): Promise<void> {
 }
 
 export async function reorderWorkCompanies(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllWorkCompaniesInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -258,7 +280,8 @@ export async function createWorkRoleWithCompany(
     workArrangement?: 'On-Site' | 'Hybrid' | 'Remote';
   }
 ): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const schema = z.object({
     companyName: z.string().min(1, 'Company name is required'),
     companyLocation: z.string().optional(),
@@ -301,7 +324,8 @@ export async function createWorkRole(
   companyId: string,
   data: CreateWorkRoleInput
 ): Promise<ReturnType<typeof db.workRole.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkCompanyOwned(userId, companyId);
   const validated = CreateWorkRoleSchema.parse(data);
   try {
     const count = await db.workRole.count({ where: { companyId } });
@@ -314,7 +338,8 @@ export async function createWorkRole(
 }
 
 export async function updateWorkRole(id: string, data: UpdateWorkRoleInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkRoleOwned(userId, id);
   const validated = UpdateWorkRoleSchema.parse(data);
   try {
     await db.workRole.update({ where: { id }, data: validated });
@@ -325,7 +350,8 @@ export async function updateWorkRole(id: string, data: UpdateWorkRoleInput): Pro
 }
 
 export async function deleteWorkRole(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkRoleOwned(userId, id);
   try {
     await db.workRole.delete({ where: { id } });
   } catch {
@@ -342,7 +368,8 @@ export async function createWorkProject(
   roleId: string,
   data: CreateWorkProjectInput
 ): Promise<ReturnType<typeof db.workProject.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkRoleOwned(userId, roleId);
   const validated = CreateWorkProjectSchema.parse(data);
   try {
     const count = await db.workProject.count({ where: { roleId } });
@@ -355,7 +382,8 @@ export async function createWorkProject(
 }
 
 export async function updateWorkProject(id: string, data: UpdateWorkProjectInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkProjectOwned(userId, id);
   const validated = UpdateWorkProjectSchema.parse(data);
   try {
     await db.workProject.update({ where: { id }, data: validated });
@@ -366,7 +394,8 @@ export async function updateWorkProject(id: string, data: UpdateWorkProjectInput
 }
 
 export async function deleteWorkProject(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertWorkProjectOwned(userId, id);
   try {
     await db.workProject.delete({ where: { id } });
   } catch {
@@ -383,7 +412,8 @@ export async function createEducation(
   resumeId: string,
   data: CreateEducationInput
 ): Promise<ReturnType<typeof db.education.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateEducationSchema.parse(data);
   try {
     const count = await db.education.count({ where: { resumeId } });
@@ -396,7 +426,8 @@ export async function createEducation(
 }
 
 export async function updateEducation(id: string, data: UpdateEducationInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertEducationOwned(userId, id);
   const validated = UpdateEducationSchema.parse(data);
   try {
     await db.education.update({ where: { id }, data: validated });
@@ -407,7 +438,8 @@ export async function updateEducation(id: string, data: UpdateEducationInput): P
 }
 
 export async function deleteEducation(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertEducationOwned(userId, id);
   try {
     await db.education.delete({ where: { id } });
   } catch {
@@ -417,7 +449,8 @@ export async function deleteEducation(id: string): Promise<void> {
 }
 
 export async function reorderEducation(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllEducationInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -439,7 +472,8 @@ export async function createSkill(
   resumeId: string,
   data: CreateSkillInput
 ): Promise<ReturnType<typeof db.skill.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateSkillSchema.parse(data);
   try {
     const count = await db.skill.count({ where: { resumeId } });
@@ -452,7 +486,8 @@ export async function createSkill(
 }
 
 export async function updateSkill(id: string, data: UpdateSkillInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertSkillOwned(userId, id);
   const validated = UpdateSkillSchema.parse(data);
   try {
     await db.skill.update({ where: { id }, data: validated });
@@ -463,7 +498,8 @@ export async function updateSkill(id: string, data: UpdateSkillInput): Promise<v
 }
 
 export async function deleteSkill(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertSkillOwned(userId, id);
   try {
     await db.skill.delete({ where: { id } });
   } catch {
@@ -473,7 +509,8 @@ export async function deleteSkill(id: string): Promise<void> {
 }
 
 export async function reorderSkills(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllSkillsInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -493,7 +530,8 @@ export async function createCertification(
   resumeId: string,
   data: CreateCertificationInput
 ): Promise<ReturnType<typeof db.certification.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateCertificationSchema.parse(data);
   try {
     const count = await db.certification.count({ where: { resumeId } });
@@ -509,7 +547,8 @@ export async function updateCertification(
   id: string,
   data: UpdateCertificationInput
 ): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCertificationOwned(userId, id);
   const validated = UpdateCertificationSchema.parse(data);
   try {
     await db.certification.update({ where: { id }, data: validated });
@@ -520,7 +559,8 @@ export async function updateCertification(
 }
 
 export async function deleteCertification(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCertificationOwned(userId, id);
   try {
     await db.certification.delete({ where: { id } });
   } catch {
@@ -530,7 +570,8 @@ export async function deleteCertification(id: string): Promise<void> {
 }
 
 export async function reorderCertifications(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllCertificationsInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -552,7 +593,8 @@ export async function createAward(
   resumeId: string,
   data: CreateAwardInput
 ): Promise<ReturnType<typeof db.award.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateAwardSchema.parse(data);
   try {
     const count = await db.award.count({ where: { resumeId } });
@@ -565,7 +607,8 @@ export async function createAward(
 }
 
 export async function updateAward(id: string, data: UpdateAwardInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAwardOwned(userId, id);
   const validated = UpdateAwardSchema.parse(data);
   try {
     await db.award.update({ where: { id }, data: validated });
@@ -576,7 +619,8 @@ export async function updateAward(id: string, data: UpdateAwardInput): Promise<v
 }
 
 export async function deleteAward(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAwardOwned(userId, id);
   try {
     await db.award.delete({ where: { id } });
   } catch {
@@ -586,7 +630,8 @@ export async function deleteAward(id: string): Promise<void> {
 }
 
 export async function reorderAwards(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllAwardsInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -606,7 +651,8 @@ export async function createProject(
   resumeId: string,
   data: CreateProjectInput
 ): Promise<ReturnType<typeof db.project.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateProjectSchema.parse(data);
   try {
     const count = await db.project.count({ where: { resumeId } });
@@ -619,7 +665,8 @@ export async function createProject(
 }
 
 export async function updateProject(id: string, data: UpdateProjectInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertProjectOwned(userId, id);
   const validated = UpdateProjectSchema.parse(data);
   try {
     await db.project.update({ where: { id }, data: validated });
@@ -630,7 +677,8 @@ export async function updateProject(id: string, data: UpdateProjectInput): Promi
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertProjectOwned(userId, id);
   try {
     await db.project.delete({ where: { id } });
   } catch {
@@ -640,7 +688,8 @@ export async function deleteProject(id: string): Promise<void> {
 }
 
 export async function reorderProjects(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllProjectsInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -662,7 +711,8 @@ export async function createVolunteeringRole(
   resumeId: string,
   data: CreateVolunteeringRoleInput
 ): Promise<ReturnType<typeof db.volunteeringRole.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreateVolunteeringRoleSchema.parse(data);
   try {
     const count = await db.volunteeringRole.count({ where: { resumeId } });
@@ -678,7 +728,8 @@ export async function updateVolunteeringRole(
   id: string,
   data: UpdateVolunteeringRoleInput
 ): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertVolunteeringRoleOwned(userId, id);
   const validated = UpdateVolunteeringRoleSchema.parse(data);
   try {
     await db.volunteeringRole.update({ where: { id }, data: validated });
@@ -689,7 +740,8 @@ export async function updateVolunteeringRole(
 }
 
 export async function deleteVolunteeringRole(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertVolunteeringRoleOwned(userId, id);
   try {
     await db.volunteeringRole.delete({ where: { id } });
   } catch {
@@ -702,7 +754,8 @@ export async function reorderVolunteeringRoles(
   resumeId: string,
   orderedIds: string[]
 ): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllVolunteeringRolesInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(
@@ -724,7 +777,8 @@ export async function createPublication(
   resumeId: string,
   data: CreatePublicationInput
 ): Promise<ReturnType<typeof db.publication.create>> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeOwned(userId, resumeId);
   const validated = CreatePublicationSchema.parse(data);
   try {
     const count = await db.publication.count({ where: { resumeId } });
@@ -737,7 +791,8 @@ export async function createPublication(
 }
 
 export async function updatePublication(id: string, data: UpdatePublicationInput): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertPublicationOwned(userId, id);
   const validated = UpdatePublicationSchema.parse(data);
   try {
     await db.publication.update({ where: { id }, data: validated });
@@ -748,7 +803,8 @@ export async function updatePublication(id: string, data: UpdatePublicationInput
 }
 
 export async function deletePublication(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertPublicationOwned(userId, id);
   try {
     await db.publication.delete({ where: { id } });
   } catch {
@@ -758,7 +814,8 @@ export async function deletePublication(id: string): Promise<void> {
 }
 
 export async function reorderPublications(resumeId: string, orderedIds: string[]): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertAllPublicationsInResume(userId, resumeId, orderedIds);
   const validated = ReorderSchema.parse(orderedIds);
   try {
     await db.$transaction(

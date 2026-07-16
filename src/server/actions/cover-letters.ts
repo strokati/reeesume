@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
+import { assertApplicationOwned, assertCoverLetterDraftOwned } from './_ownership';
 
 async function requireAuth(): Promise<string> {
   const session = await auth();
@@ -12,7 +13,8 @@ async function requireAuth(): Promise<string> {
 }
 
 export async function createCoverLetterDraft(applicationId: string, name: string): Promise<string> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
 
   const count = await db.coverLetterDraft.count({ where: { applicationId } });
   const draft = await db.coverLetterDraft.create({
@@ -28,7 +30,8 @@ export async function createCoverLetterDraft(applicationId: string, name: string
 }
 
 export async function updateCoverLetterContent(id: string, content: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   try {
     await db.coverLetterDraft.update({ where: { id }, data: { content } });
   } catch {
@@ -37,7 +40,8 @@ export async function updateCoverLetterContent(id: string, content: string): Pro
 }
 
 export async function updateCoverLetterTone(id: string, tone: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   if (!['professional', 'confident', 'warm'].includes(tone)) {
     throw new Error('Invalid tone.');
   }
@@ -49,7 +53,8 @@ export async function updateCoverLetterTone(id: string, tone: string): Promise<v
 }
 
 export async function updateHiringManager(id: string, hiringManager: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   try {
     await db.coverLetterDraft.update({ where: { id }, data: { hiringManager } });
   } catch {
@@ -58,7 +63,8 @@ export async function updateHiringManager(id: string, hiringManager: string): Pr
 }
 
 export async function renameCoverLetterDraft(id: string, name: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   try {
     await db.coverLetterDraft.update({ where: { id }, data: { name } });
   } catch {
@@ -67,7 +73,8 @@ export async function renameCoverLetterDraft(id: string, name: string): Promise<
 }
 
 export async function deleteCoverLetterDraft(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   const draft = await db.coverLetterDraft.findUnique({ where: { id } });
   if (!draft) throw new Error('Draft not found.');
 
@@ -87,7 +94,9 @@ export async function deleteCoverLetterDraft(id: string): Promise<void> {
 }
 
 export async function setActiveCoverLetterDraft(id: string, applicationId: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
+  await assertCoverLetterDraftOwned(userId, id);
   await db.$transaction([
     db.coverLetterDraft.updateMany({
       where: { applicationId },
@@ -102,7 +111,8 @@ export async function setActiveCoverLetterDraft(id: string, applicationId: strin
 }
 
 export async function markCoverLetterReady(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   try {
     await db.coverLetterDraft.update({
       where: { id },
@@ -115,7 +125,8 @@ export async function markCoverLetterReady(id: string): Promise<void> {
 }
 
 export async function revertCoverLetterToDraft(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   try {
     await db.coverLetterDraft.update({
       where: { id },
@@ -128,7 +139,8 @@ export async function revertCoverLetterToDraft(id: string): Promise<void> {
 }
 
 export async function duplicateCoverLetterDraft(id: string): Promise<string> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertCoverLetterDraftOwned(userId, id);
   const draft = await db.coverLetterDraft.findUnique({ where: { id } });
   if (!draft) throw new Error('Draft not found.');
 
@@ -149,7 +161,8 @@ export async function duplicateCoverLetterDraft(id: string): Promise<string> {
 }
 
 export async function listCoverLetterDrafts(applicationId: string) {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
   return db.coverLetterDraft.findMany({
     where: { applicationId },
     orderBy: { createdAt: 'desc' },

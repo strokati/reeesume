@@ -60,6 +60,7 @@ describe('updateApplicationStatus', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('updates status to a valid value', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
     db.application.update.mockResolvedValue({});
     await updateApplicationStatus('app-1', { status: 'applied' });
     expect(db.application.update).toHaveBeenCalledWith(
@@ -73,7 +74,16 @@ describe('updateApplicationStatus', () => {
   });
 
   it('rejects an invalid status string', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
     await expect(updateApplicationStatus('app-1', { status: 'invalid' })).rejects.toThrow();
+    expect(db.application.update).not.toHaveBeenCalled();
+  });
+
+  it('throws when application does not belong to user (IDOR guard)', async () => {
+    db.application.findFirst.mockResolvedValue(null);
+    await expect(updateApplicationStatus('app-1', { status: 'applied' })).rejects.toThrow(
+      'Not found.'
+    );
     expect(db.application.update).not.toHaveBeenCalled();
   });
 });
@@ -82,6 +92,7 @@ describe('updateExcitement', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('updates excitement to a valid value', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
     db.application.update.mockResolvedValue({});
     await updateExcitement('app-1', { excitement: 4 });
     expect(db.application.update).toHaveBeenCalledWith(
@@ -90,6 +101,13 @@ describe('updateExcitement', () => {
   });
 
   it('rejects excitement out of range', async () => {
+    db.application.findFirst.mockResolvedValue({ id: 'app-1' });
     await expect(updateExcitement('app-1', { excitement: 6 })).rejects.toThrow();
+  });
+
+  it('throws when application does not belong to user (IDOR guard)', async () => {
+    db.application.findFirst.mockResolvedValue(null);
+    await expect(updateExcitement('app-1', { excitement: 4 })).rejects.toThrow('Not found.');
+    expect(db.application.update).not.toHaveBeenCalled();
   });
 });

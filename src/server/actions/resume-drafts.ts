@@ -7,6 +7,7 @@ import { db } from '@/lib/db/client';
 import { getFullMasterResume } from '@/server/queries/master-resume';
 import { getResumeDrafts } from '@/server/queries/resume-drafts';
 import type { ResumeDraftContent } from '@/types/resume-draft';
+import { assertApplicationOwned, assertResumeDraftOwned } from './_ownership';
 
 async function requireAuth(): Promise<string> {
   const session = await auth();
@@ -144,6 +145,7 @@ async function buildInitialContent(
 
 export async function createResumeDraft(applicationId: string, name: string): Promise<string> {
   const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
 
   const application = await db.application.findUnique({ where: { id: applicationId } });
   if (!application) throw new Error('Application not found.');
@@ -167,7 +169,8 @@ export async function updateResumeDraftContent(
   id: string,
   content: ResumeDraftContent
 ): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   try {
     await db.resumeDraft.update({
       where: { id },
@@ -179,7 +182,8 @@ export async function updateResumeDraftContent(
 }
 
 export async function updateResumeDraftTemplate(id: string, templateId: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   try {
     await db.resumeDraft.update({ where: { id }, data: { templateId } });
   } catch {
@@ -188,7 +192,8 @@ export async function updateResumeDraftTemplate(id: string, templateId: string):
 }
 
 export async function renameResumeDraft(id: string, name: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   try {
     await db.resumeDraft.update({ where: { id }, data: { name } });
   } catch {
@@ -197,7 +202,8 @@ export async function renameResumeDraft(id: string, name: string): Promise<void>
 }
 
 export async function deleteResumeDraft(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   const draft = await db.resumeDraft.findUnique({ where: { id } });
   if (!draft) throw new Error('Draft not found.');
 
@@ -222,7 +228,9 @@ export async function deleteResumeDraft(id: string): Promise<void> {
 }
 
 export async function setActiveDraft(id: string, applicationId: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
+  await assertResumeDraftOwned(userId, id);
   await db.$transaction([
     db.resumeDraft.updateMany({
       where: { applicationId },
@@ -237,7 +245,8 @@ export async function setActiveDraft(id: string, applicationId: string): Promise
 }
 
 export async function markDraftReady(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   try {
     await db.resumeDraft.update({
       where: { id },
@@ -250,7 +259,8 @@ export async function markDraftReady(id: string): Promise<void> {
 }
 
 export async function revertDraftToDraft(id: string): Promise<void> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   try {
     await db.resumeDraft.update({
       where: { id },
@@ -263,7 +273,8 @@ export async function revertDraftToDraft(id: string): Promise<void> {
 }
 
 export async function duplicateDraft(id: string): Promise<string> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, id);
   const draft = await db.resumeDraft.findUnique({ where: { id } });
   if (!draft) throw new Error('Draft not found.');
 
@@ -284,6 +295,7 @@ export async function duplicateDraft(id: string): Promise<string> {
 
 export async function syncWorkExperienceFromMaster(draftId: string): Promise<ResumeDraftContent> {
   const userId = await requireAuth();
+  await assertResumeDraftOwned(userId, draftId);
 
   const draft = await db.resumeDraft.findUnique({
     where: { id: draftId },
@@ -340,6 +352,7 @@ export async function syncWorkExperienceFromMaster(draftId: string): Promise<Res
 }
 
 export async function fetchResumeDrafts(applicationId: string): ReturnType<typeof getResumeDrafts> {
-  await requireAuth();
+  const userId = await requireAuth();
+  await assertApplicationOwned(userId, applicationId);
   return getResumeDrafts(applicationId);
 }
