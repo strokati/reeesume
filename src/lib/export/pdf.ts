@@ -1,7 +1,25 @@
 import { storeRenderData } from './render-store';
+import { sanitizeCoverLetterHtml } from './sanitize-html';
 import type { ResumeData } from '@/lib/templates/types';
 
-const LAUNCH_ARGS = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'];
+// Chromium still needs --no-sandbox inside Docker (no userns by default).
+// Hardening below compensates: DOMPurify strips attacker-controlled HTML
+// before render and the additional flags reduce the attack surface of the
+// browser instance itself.
+const LAUNCH_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-features=AutofillServerCommunication,SiteIsolationExtensions',
+  '--disable-extensions',
+  '--disable-plugins',
+  '--disable-default-apps',
+  '--disable-popup-blocking',
+  '--disable-translate',
+  '--disable-sync',
+  '--no-first-run',
+  '--disable-gpu',
+];
 const BASE_URL = `http://localhost:${process.env.PORT || 3000}`;
 
 async function getBrowser() {
@@ -41,11 +59,13 @@ export async function renderResumeWithCoverLetterPdf(
   templateId: string,
   coverLetterHtml: string
 ): Promise<Buffer> {
-  const token = storeRenderData(data, templateId, coverLetterHtml);
+  const safeHtml = sanitizeCoverLetterHtml(coverLetterHtml);
+  const token = storeRenderData(data, templateId, safeHtml);
   return urlToPdf(`${BASE_URL}/export-preview/${token}`);
 }
 
 export async function renderCoverLetterOnlyPdf(htmlContent: string): Promise<Buffer> {
+  const safeHtml = sanitizeCoverLetterHtml(htmlContent);
   const fullHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -57,7 +77,7 @@ export async function renderCoverLetterOnlyPdf(htmlContent: string): Promise<Buf
   p { margin-bottom: 8pt; }
 </style>
 </head>
-<body>${htmlContent}</body>
+<body>${safeHtml}</body>
 </html>`;
 
   const browser = await getBrowser();
