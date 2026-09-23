@@ -44,13 +44,14 @@ type RestoreResult = { ok: true; summary: string } | { ok: false; error: string 
 export async function restoreUserArchive(jsonString: string): Promise<RestoreResult> {
   const userId = await requireAuth();
 
-  // Pre-parse guard so the 2mb server-action body cap is the only safety net
-  // we need; even if Next.js lets a larger payload through, restore can't
-  // allocate unbounded JSON parse work on attacker input.
-  if (jsonString.length > 1_500_000) {
+  // Pre-parse guard sized just under the 10mb server-action body cap
+  // (next.config.ts), leaving headroom for action-payload encoding overhead;
+  // even if Next.js lets a larger payload through, restore can't allocate
+  // unbounded JSON parse work on attacker input.
+  if (jsonString.length > 9_000_000) {
     return {
       ok: false,
-      error: 'Archive is too large (>1.5 MB). Export and restore a smaller subset.',
+      error: 'Archive is too large (>9 MB). Export and restore a smaller subset.',
     };
   }
 
